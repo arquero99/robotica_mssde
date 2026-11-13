@@ -1,0 +1,181 @@
+# 10 · Tipos propios: msg y srv {.bloque}
+
+[15 min]{.tiempo}
+
+## Paquete de interfaces
+
+Las interfaces se definen en un paquete **`ament_cmake`**. Desde él, `rosidl` genera el código C++ **y** Python.
+
+```{.bash}
+cd ~/ros2_ws/src
+ros2 pkg create --build-type ament_cmake --license Apache-2.0 tutorial_interfaces
+cd tutorial_interfaces && mkdir msg srv
+```
+
+:::: {.columns}
+
+::: {.column width="33%"}
+`msg/Num.msg`
+```{.default include="ros2_ws/src/tutorial_interfaces/msg/Num.msg"}
+```
+:::
+
+::: {.column width="33%"}
+`msg/Sphere.msg`
+```{.default include="ros2_ws/src/tutorial_interfaces/msg/Sphere.msg"}
+```
+:::
+
+::: {.column width="33%"}
+`srv/AddThreeInts.srv`
+```{.default include="ros2_ws/src/tutorial_interfaces/srv/AddThreeInts.srv"}
+```
+:::
+
+::::
+
+- `Sphere` **reutiliza** otro mensaje (`geometry_msgs/Point`), así que hay que declarar esa dependencia.
+- Los nombres de fichero van en *CamelCase*; el código generado usa `num.hpp` (C++) y `from tutorial_interfaces.msg import Num` (Python).
+
+::: {.ref}
+[Creating custom msg and srv files](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Custom-ROS2-Interfaces.html)
+:::
+
+## Generar el código: `CMakeLists.txt` y `package.xml`
+
+::: {.panel-tabset}
+
+### CMakeLists.txt
+
+```{.cmake include="ros2_ws/src/tutorial_interfaces/CMakeLists.txt"}
+```
+
+### package.xml
+
+```{.xml include="ros2_ws/src/tutorial_interfaces/package.xml" start-line=10 end-line=15}
+```
+
+:::
+
+```{.bash}
+cd ~/ros2_ws
+colcon build --packages-select tutorial_interfaces
+source install/setup.bash
+ros2 interface show tutorial_interfaces/msg/Sphere   # muestra también los campos de Point
+```
+
+## Usar el mensaje `Num` en un publicador
+
+Solo cambian las líneas marcadas con `// CHANGE` y `# CHANGE`. La estructura del nodo es la del bloque 8.
+
+::: {.panel-tabset}
+
+### C++
+
+```{.cpp include="ros2_ws/src/cpp_pubsub/src/publisher_num.cpp" start-line=1 end-line=30 filename="src/publisher_num.cpp"}
+```
+
+### Python
+
+```{.python include="ros2_ws/src/py_pubsub/py_pubsub/publisher_num.py" start-line=1 end-line=22 filename="py_pubsub/publisher_num.py"}
+```
+
+:::
+
+El suscriptor (`subscriber_num.cpp` / `subscriber_num.py`) se adapta igual. Lo tienes en el repositorio.
+
+## Usar el servicio `AddThreeInts`
+
+::: {.panel-tabset}
+
+### C++
+
+```{.cpp include="ros2_ws/src/cpp_srvcli/src/add_three_ints_server.cpp" start-line=1 end-line=33 filename="src/add_three_ints_server.cpp"}
+```
+
+### Python
+
+```{.python include="ros2_ws/src/py_srvcli/py_srvcli/service_three.py" start-line=1 end-line=20 filename="py_srvcli/service_three.py"}
+```
+
+:::
+
+Clientes en el repositorio: `add_three_ints_client.cpp` y `client_three.py`.
+
+## Declarar la nueva dependencia
+
+::: {.panel-tabset}
+
+### C++
+
+```{.xml}
+<!-- package.xml de cpp_pubsub y cpp_srvcli -->
+<depend>tutorial_interfaces</depend>
+```
+
+```{.cmake}
+# CMakeLists.txt
+find_package(tutorial_interfaces REQUIRED)
+
+add_executable(talker_num src/publisher_num.cpp)
+target_link_libraries(talker_num PUBLIC rclcpp::rclcpp tutorial_interfaces::tutorial_interfaces)
+```
+
+### Python
+
+```{.xml}
+<!-- package.xml de py_pubsub y py_srvcli -->
+<exec_depend>tutorial_interfaces</exec_depend>
+```
+
+```{.python}
+# setup.py
+'talker_num = py_pubsub.publisher_num:main',
+'listener_num = py_pubsub.subscriber_num:main',
+```
+
+:::
+
+::: {.callout-tip}
+También se puede definir una interfaz y usarla **en el mismo paquete** (ver [Implementing custom interfaces](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/Working-with-interfaces/Single-Package-Define-And-Use-Interface.html)). Lo habitual es un paquete `*_interfaces` separado: así otros paquetes pueden usar las interfaces sin depender de tu código.
+:::
+
+## Pruébalo
+
+```{.bash}
+cd ~/ros2_ws
+colcon build --packages-up-to cpp_pubsub py_pubsub cpp_srvcli py_srvcli   # compila también tutorial_interfaces
+```
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{.bash}
+# Topic con Num: C++ publica, Python escucha
+ros2 run cpp_pubsub talker_num
+ros2 run py_pubsub listener_num
+
+# Servicio con AddThreeInts
+ros2 run py_srvcli service_three
+ros2 run cpp_srvcli client_three
+#   result of 41 + 1 + 1 = 43
+```
+:::
+
+::: {.column width="50%"}
+```{.bash}
+# Y desde la CLI, con el tipo propio
+ros2 topic echo /topic_num
+ros2 topic pub --once /topic_num \
+  tutorial_interfaces/msg/Num "{num: 42}"
+
+ros2 service call /add_three_ints \
+  tutorial_interfaces/srv/AddThreeInts "{a: 1, b: 2, c: 3}"
+```
+:::
+
+::::
+
+::: {.notes}
+Diferencia con el tutorial oficial: allí se modifican los ficheros de pub/sub y servicio; aquí se añaden ejecutables nuevos (`*_num`, `*_three`) y el topic se llama `topic_num`, para que convivan ambas versiones y no haya conflicto de tipos en `/topic`.
+:::

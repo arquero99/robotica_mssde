@@ -1,0 +1,231 @@
+# 11 · Actions {.bloque}
+
+[20 min · demo en C++ + ejercicio en Python]{.tiempo}
+
+## Qué es una action
+
+Una llamada **de larga duración** con **feedback** y que se puede **cancelar**. Ejemplo: navegar hasta un punto.
+
+:::: {.columns}
+
+::: {.column width="55%"}
+```{mermaid}
+sequenceDiagram
+  participant C as Cliente
+  participant S as Servidor
+  C->>S: Goal (objetivo)
+  S-->>C: Goal aceptado / rechazado
+  loop mientras se ejecuta
+    S-->>C: Feedback (progreso)
+  end
+  opt
+    C->>S: Cancelar
+  end
+  S-->>C: Result (resultado final)
+```
+:::
+
+::: {.column width="45%"}
+- El **servidor** acepta o rechaza el goal, ejecuta la tarea, publica feedback y atiende las cancelaciones.
+- El **cliente** envía el goal, recibe el feedback y obtiene el resultado.
+- Internamente, una action combina **servicios** (enviar goal, cancelar, pedir el resultado) y **topics** (feedback y estado).
+- Para algo rápido, usa un **servicio**: una action tiene más coste de puesta en marcha.
+:::
+
+::::
+
+::: {.ref}
+[Actions](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/About-Actions.html)
+:::
+
+## CLI: actions con turtlesim
+
+Con `turtle_teleop_key`, las teclas `G|B|V|C|D|E|R|T` envían un goal de **rotación absoluta**, y `F` lo cancela.
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{.bash}
+ros2 node info /turtlesim       # sección "Action Servers"
+ros2 action list -t
+ros2 action type /turtle1/rotate_absolute
+ros2 action info /turtle1/rotate_absolute
+ros2 interface show turtlesim_msgs/action/RotateAbsolute
+```
+
+```{.default}
+# The desired heading in radians
+float32 theta
+---
+# The angular displacement in radians to the starting position
+float32 delta
+---
+# The remaining rotation in radians
+float32 remaining
+```
+:::
+
+::: {.column width="50%"}
+```{.bash}
+# Enviar un goal
+ros2 action send_goal /turtle1/rotate_absolute \
+  turtlesim_msgs/action/RotateAbsolute "{theta: 1.57}"
+
+# ...y ver el feedback mientras se ejecuta
+ros2 action send_goal /turtle1/rotate_absolute \
+  turtlesim_msgs/action/RotateAbsolute "{theta: -1.57}" --feedback
+```
+
+```{.default}
+Goal accepted with ID: f8db8f44410849eaa93d3feb747dd444
+
+Result:
+  delta: -1.568000316619873
+
+Goal finished with status: SUCCEEDED
+```
+:::
+
+::::
+
+::: {.ref}
+[Learning about actions](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/actions/Working-with-actions/Understanding-ROS2-Actions/Understanding-ROS2-Actions.html)
+:::
+
+## Definir la action (igual que msg/srv)
+
+:::: {.columns}
+
+::: {.column width="40%"}
+```{.bash}
+cd ~/ros2_ws/src
+ros2 pkg create --build-type ament_cmake \
+  --license Apache-2.0 custom_action_interfaces
+mkdir custom_action_interfaces/action
+```
+
+`action/Fibonacci.action`: goal `---` result `---` feedback
+
+```{.default include="ros2_ws/src/custom_action_interfaces/action/Fibonacci.action"}
+```
+:::
+
+::: {.column width="60%"}
+```{.cmake}
+# CMakeLists.txt
+find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/Fibonacci.action"
+)
+```
+
+```{.xml}
+<!-- package.xml -->
+<buildtool_depend>rosidl_default_generators</buildtool_depend>
+<exec_depend>rosidl_default_runtime</exec_depend>
+<member_of_group>rosidl_interface_packages</member_of_group>
+```
+
+```{.bash}
+cd ~/ros2_ws && colcon build --packages-select custom_action_interfaces
+source install/setup.bash
+ros2 interface show custom_action_interfaces/action/Fibonacci
+```
+:::
+
+::::
+
+::: {.ref}
+[Creating an action](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/actions/Working-with-actions/Creating-an-Action.html)
+:::
+
+## Servidor C++ (1/2): crear el servidor
+
+```{.cpp include="ros2_ws/src/custom_action_cpp/src/fibonacci_action_server.cpp" start-line=14 end-line=58}
+```
+
+## Servidor C++ (2/2): ejecutar el goal {.codigo-medio}
+
+```{.cpp include="ros2_ws/src/custom_action_cpp/src/fibonacci_action_server.cpp" start-line=63 end-line=96 dedent=2}
+```
+
+- `publish_feedback()` envía el progreso; `succeed()` / `canceled()` terminan el goal.
+- `is_canceling()` en cada iteración: **cancelación limpia**. `execute` corre en otro hilo.
+
+## Cliente C++ (1/2): enviar el goal
+
+```{.cpp include="ros2_ws/src/custom_action_cpp/src/fibonacci_action_client.cpp" start-line=34 end-line=58 dedent=2}
+```
+
+## Cliente C++ (2/2): feedback y resultado
+
+```{.cpp include="ros2_ws/src/custom_action_cpp/src/fibonacci_action_client.cpp" start-line=60 end-line=96 dedent=2}
+```
+
+`async_send_goal` no bloquea: el progreso llega por `feedback_callback` y el final por `result_callback`.
+
+## Configuración y prueba (C++)
+
+```{.bash}
+cd ~/ros2_ws/src
+ros2 pkg create --dependencies custom_action_interfaces rclcpp rclcpp_action rclcpp_components \
+  --license Apache-2.0 -- custom_action_cpp
+```
+
+El servidor y el cliente se compilan como **componentes** (`rclcpp_components_register_node`). Cada uno genera además un ejecutable. El `CMakeLists.txt` completo está en `ros2_ws/src/custom_action_cpp/`.
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{.bash}
+cd ~/ros2_ws
+colcon build --packages-up-to custom_action_cpp
+
+# Terminal 1
+source install/setup.bash
+ros2 run custom_action_cpp fibonacci_action_server
+
+# Terminal 2
+source install/setup.bash
+ros2 run custom_action_cpp fibonacci_action_client
+```
+:::
+
+::: {.column width="50%"}
+```{.bash}
+# Terminal 3: el mismo servidor desde la CLI
+ros2 action list -t
+ros2 action send_goal --feedback /fibonacci \
+  custom_action_interfaces/action/Fibonacci "{order: 5}"
+```
+:::
+
+::::
+
+::: {.ref}
+[Writing an action server and client (C++)](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/actions/Working-with-actions/Writing-an-Action-Server-Client/Cpp.html)
+:::
+
+## Ejercicio: la action Fibonacci en Python
+
+::: {.callout-note icon=false}
+## Objetivo
+Crear el paquete **`custom_action_py`** (`ament_python`) con un **servidor** y un **cliente** de la action `custom_action_interfaces/action/Fibonacci`, compatibles con los nodos C++.
+:::
+
+| Pieza | API de `rclpy.action` |
+|---|---|
+| Servidor | `ActionServer(self, Fibonacci, 'fibonacci', self.execute_callback)` |
+| En `execute_callback(goal_handle)` | `goal_handle.request.order` · `goal_handle.publish_feedback(...)` · `goal_handle.succeed()` · devolver `Fibonacci.Result()` |
+| Cliente | `ActionClient(self, Fibonacci, 'fibonacci')` · `wait_for_server()` |
+| Enviar | `send_goal_async(goal, feedback_callback=...)` → future con el `goal_handle` |
+| Resultado | `goal_handle.get_result_async()` → future con el resultado |
+
+**Comprobación**: servidor Python + cliente C++, servidor C++ + cliente Python, y `ros2 action send_goal --feedback`.
+
+📄 Enunciado completo: `ejercicios/ejercicio-actions-python.md` · ✅ Solución: `ros2_ws/src/custom_action_py/`
+
+::: {.ref}
+[Writing an action server and client (Python)](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/actions/Working-with-actions/Writing-an-Action-Server-Client/Py.html)
+:::

@@ -1,0 +1,114 @@
+# 2 · Arquitectura {.bloque}
+
+[13 min]{.tiempo}
+
+## El grafo ROS
+
+Un sistema ROS es una **red de nodos** que procesan datos de forma concurrente y se comunican mediante interfaces bien definidas.
+
+```{mermaid}
+%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+flowchart LR
+  N1[Nodo A] -->|topic| N2[Nodo B]
+  N1 <-->|servicio| N3[Nodo C]
+  N2 <-->|action| N4[Nodo D]
+```
+
+- **Nodo**: unidad modular con una única responsabilidad, por ejemplo controlar un motor o publicar un sensor. Un ejecutable puede contener uno o varios nodos.
+- **Topics, servicios y actions**: cómo se envían datos los nodos.
+- **Parámetros**: configuran cada nodo al arrancar y en ejecución. **No** son un canal de comunicación.
+
+::: {.ref}
+[How ROS works](https://docs.ros.org/en/lyrical/ROS-Framework/How-ROS-Works.html) · [Nodes](https://docs.ros.org/en/lyrical/ROS-Framework/About-Nodes.html)
+:::
+
+## Las capas de ROS 2
+
+:::: {.columns}
+
+::: {.column width="45%"}
+```{mermaid}
+%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+flowchart TB
+  U["Tu código<br/>(nodos C++ / Python)"] --> CPP["rclcpp"]
+  U --> PY["rclpy"]
+  CPP --> RCL["rcl (C)<br/>lógica común de ROS"]
+  PY --> RCL
+  RCL --> RMW["rmw<br/>interfaz del middleware"]
+  RMW --> FDDS["Fast DDS<br/>(por defecto)"]
+  RMW --> OTROS["Cyclone DDS · Connext<br/>GurumDDS · Zenoh"]
+```
+:::
+
+::: {.column width="55%"}
+- **`rclcpp` / `rclpy`**: las API que usarás. Cada una es idiomática en su lenguaje.
+- **`rcl`**: núcleo común en C. Parámetros, nombres o tiempo funcionan igual en todos los lenguajes.
+- **`rmw`**: abstrae el transporte. El middleware se puede **cambiar en tiempo de ejecución**:
+
+```{.bash}
+RMW_IMPLEMENTATION=rmw_zenoh_cpp ros2 run demo_nodes_cpp talker
+```
+
+- **`rosidl`**: genera código C++ y Python a partir de los ficheros de interfaz (`.msg`, `.srv`, `.action`). Por eso un nodo C++ y otro Python se entienden.
+:::
+
+::::
+
+::: {.ref}
+[Client libraries](https://docs.ros.org/en/lyrical/ROS-Framework/About-Client-Libraries.html) · [Middleware](https://docs.ros.org/en/lyrical/ROS-Framework/About-Middleware.html)
+:::
+
+## Descubrimiento de nodos
+
+Con el middleware DDS por defecto **no hay servidor central** (en ROS 1 había un *master*):
+
+1. Al arrancar, un nodo **anuncia** su presencia a los nodos del mismo dominio.
+2. Los nodos repiten el anuncio periódicamente, así se detectan los que llegan después.
+3. Al cerrarse limpiamente avisan. Si un nodo falla, se detecta al dejar de recibir sus anuncios.
+
+Dos variables de entorno controlan quién ve a quién:
+
+| Variable | Para qué | Ejemplo |
+|---|---|---|
+| `ROS_DOMAIN_ID` | Aislar grupos de nodos: solo se ven los del mismo dominio (0–101) | `export ROS_DOMAIN_ID=7` |
+| `ROS_AUTOMATIC_DISCOVERY_RANGE` | Limitar el alcance del descubrimiento | `export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` |
+
+::: {.callout-warning}
+**En el aula** usad `ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` o un `ROS_DOMAIN_ID` distinto por persona. Si no, veréis los nodos de los compañeros.
+:::
+
+::: {.ref}
+[Setting up your environment](https://docs.ros.org/en/lyrical/Get-Started/Configuring-ROS2-Environment.html) · [Domain ID](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/About-Domain-ID.html)
+:::
+
+## CLI y API: dos formas de trabajar
+
+:::: {.columns}
+
+::: {.column width="50%"}
+### CLI: `ros2 …`
+Explorar e interactuar con un sistema **en marcha**:
+
+```{.bash}
+ros2 node list        # ¿qué nodos hay?
+ros2 topic list       # ¿qué topics?
+ros2 service list     # ¿qué servicios?
+ros2 action list      # ¿qué actions?
+ros2 run rqt_graph rqt_graph   # ver el grafo
+ros2 doctor           # diagnóstico del entorno
+```
+:::
+
+::: {.column width="50%"}
+### API: `rclcpp` / `rclpy`
+**Programar** tus propios nodos con los mismos conceptos.
+
+- Lo que ves con la CLI lo creas con la API.
+- Primero exploramos con la CLI y después lo programamos.
+:::
+
+::::
+
+::: {.notes}
+Demo rápida: talker C++ + listener Python (si da tiempo) y `rqt_graph`. Remarcar que son dos lenguajes distintos hablando por el mismo topic.
+:::

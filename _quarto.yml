@@ -1,0 +1,32 @@
+project:
+  type: default
+  output-dir: _site
+  render:
+    - index.qmd
+
+lang: es
+
+filters:
+  - include-code-files
+
+format:
+  revealjs:
+    theme: [default, estilos/custom.scss]
+    width: 1280
+    height: 720
+    margin: 0.05
+    slide-number: c/t
+    show-slide-number: all
+    hash-type: number
+    progress: true
+    controls: true
+    transition: none
+    code-copy: true
+    code-overflow: scroll
+    code-line-numbers: false
+    highlight-style: github
+    preview-links: auto
+    footer: "ROS 2 Lyrical Luth · Máster en Sistemas Empotrados y Distribuidos · ETSISI UPM"
+    mermaid:
+      theme: neutral
+    embed-resources: false

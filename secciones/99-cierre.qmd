@@ -1,0 +1,26 @@
+# Cierre {.bloque}
+
+[2 min]{.tiempo}
+
+## Resumen
+
+| Concepto | CLI | C++ (`rclcpp`) | Python (`rclpy`) |
+|---|---|---|---|
+| Paquete | `ros2 pkg create` · `colcon build` | `ament_cmake` | `ament_python` |
+| Nodo | `ros2 run` · `ros2 node list/info` | `rclcpp::Node` | `rclpy.node.Node` |
+| Topic | `ros2 topic echo/pub/hz` | `create_publisher` · `create_subscription` | `create_publisher` · `create_subscription` |
+| Servicio | `ros2 service call` | `create_service` · `create_client` + `async_send_request` | `create_service` · `create_client` + `call_async` |
+| Action | `ros2 action send_goal --feedback` | `rclcpp_action::create_server/create_client` | `ActionServer` · `ActionClient` |
+| Interfaz | `ros2 interface show` | `rosidl_generate_interfaces` (paquete `ament_cmake`) | ← el mismo paquete |
+| Parámetro | `ros2 param get/set/dump` · `-p` | `declare_parameter` · `get_parameter` | `declare_parameter` · `get_parameter` |
+| Launch | `ros2 launch pkg fichero_launch.py` | `install(DIRECTORY launch ...)` | `data_files` en `setup.py` |
+
+## Siguientes pasos
+
+- **QoS**: fiabilidad, durabilidad e historial ([Quality of Service](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/topics/Working-with-topics/Quality-of-Service.html)).
+- **tf2**: sistemas de coordenadas y transformaciones ([tf2](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/Working-with-interfaces/Introduction-To-Tf2/Introduction-To-Tf2.html)).
+- **rosbag**: grabar y reproducir datos ([Recording and playing back data](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/Working-with-interfaces/Recording-And-Playing-Back-Data/Recording-And-Playing-Back-Data.html)).
+- **Composición** y **nodos gestionados** (*lifecycle*) ([Composition](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/About-Composition.html) · [Managed nodes](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/Working-with-nodes/Managed-Nodes.html)).
+- **Executors** y *callback groups* ([Executors](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/About-Executors/About-Executors.html)).
+
+**Recursos**: documentación de Lyrical <https://docs.ros.org/en/lyrical/> · paquetes en [ROS Index](https://index.ros.org/) · código de esta sesión en `ros2_ws/src/` · ejercicio en `ejercicios/ejercicio-actions-python.md`.

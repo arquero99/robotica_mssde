@@ -1,0 +1,166 @@
+# 8 · Topics {.bloque}
+
+[20 min]{.tiempo}
+
+## CLI: explorar topics con turtlesim
+
+```{.bash}
+ros2 run turtlesim turtlesim_node      # terminal 1
+ros2 run turtlesim turtle_teleop_key   # terminal 2: mueve la tortuga con las flechas
+
+# Observar
+ros2 topic list -t                          # topics y su tipo
+ros2 topic info /turtle1/cmd_vel --verbose  # publicadores, suscriptores y QoS
+ros2 topic echo /turtle1/pose               # ver los mensajes
+ros2 topic hz /turtle1/pose                 # frecuencia (bw: ancho de banda)
+ros2 topic find geometry_msgs/msg/Twist     # topics de un tipo
+ros2 run rqt_graph rqt_graph                # grafo de nodos y topics
+
+# Publicar: un mensaje (-w 2: espera a 2 suscriptores) o de forma continua a 1 Hz
+ros2 topic pub --once -w 2 /turtle1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 2.0}, angular: {z: 1.8}}"
+ros2 topic pub --rate 1 /turtle1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 2.0}, angular: {z: 1.8}}"
+```
+
+El mensaje se escribe en **YAML**; los campos omitidos valen 0. Plantilla: `ros2 interface proto <tipo>`.
+
+::: {.ref}
+[Learning about topics](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/topics/Understanding-ROS2-Topics/Understanding-ROS2-Topics.html)
+:::
+
+## Publicador
+
+::: {.panel-tabset}
+
+### C++
+
+```{.cpp include="ros2_ws/src/cpp_pubsub/src/publisher_lambda_function.cpp" start-line=14 end-line=35 filename="src/publisher_lambda_function.cpp"}
+```
+
+### Python
+
+```{.python include="ros2_ws/src/py_pubsub/py_pubsub/publisher_member_function.py" start-line=8 end-line=22 filename="py_pubsub/publisher_member_function.py"}
+```
+
+:::
+
+- `create_publisher(tipo, "topic", 10)`: el `10` es la profundidad de la cola (QoS).
+- Cada 500 ms el **timer** rellena un mensaje y llama a `publish()`.
+
+## Suscriptor
+
+::: {.panel-tabset}
+
+### C++
+
+```{.cpp include="ros2_ws/src/cpp_pubsub/src/subscriber_lambda_function.cpp" start-line=6 end-line=22 filename="src/subscriber_lambda_function.cpp"}
+```
+
+### Python
+
+```{.python include="ros2_ws/src/py_pubsub/py_pubsub/subscriber_member_function.py" start-line=8 end-line=20 filename="py_pubsub/subscriber_member_function.py"}
+```
+
+:::
+
+- El callback se ejecuta **cada vez que llega un mensaje** (mientras el nodo está en `spin`).
+- Mismo topic, mismo tipo y QoS compatible: se conectan **solos**, sea C++ o Python.
+
+## Configuración del paquete
+
+::: {.panel-tabset}
+
+### C++
+
+```{.bash}
+ros2 pkg create --build-type ament_cmake --license Apache-2.0 cpp_pubsub
+```
+
+```{.xml}
+<!-- package.xml -->
+<depend>rclcpp</depend>
+<depend>std_msgs</depend>
+```
+
+```{.cmake}
+# CMakeLists.txt
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+
+add_executable(talker src/publisher_lambda_function.cpp)
+target_link_libraries(talker PUBLIC rclcpp::rclcpp std_msgs::std_msgs)
+
+add_executable(listener src/subscriber_lambda_function.cpp)
+target_link_libraries(listener PUBLIC rclcpp::rclcpp std_msgs::std_msgs)
+
+install(TARGETS talker listener DESTINATION lib/${PROJECT_NAME})
+```
+
+### Python
+
+```{.bash}
+ros2 pkg create --build-type ament_python --license Apache-2.0 py_pubsub
+```
+
+```{.xml}
+<!-- package.xml -->
+<exec_depend>rclpy</exec_depend>
+<exec_depend>std_msgs</exec_depend>
+```
+
+```{.python}
+# setup.py
+entry_points={
+    'console_scripts': [
+        'talker = py_pubsub.publisher_member_function:main',
+        'listener = py_pubsub.subscriber_member_function:main',
+    ],
+},
+```
+
+:::
+
+::: {.ref}
+[Writing a simple publisher and subscriber (C++)](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html) · [(Python)](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Writing-A-Simple-Py-Publisher-And-Subscriber.html)
+:::
+
+## Pruébalo: mezclar C++ y Python
+
+```{.bash}
+cd ~/ros2_ws
+rosdep install -i --from-path src --rosdistro lyrical -y
+colcon build --packages-select cpp_pubsub py_pubsub
+```
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{.bash}
+# Terminal 1: publicador C++
+source install/setup.bash
+ros2 run cpp_pubsub talker
+
+# Terminal 2: suscriptor Python
+source install/setup.bash
+ros2 run py_pubsub listener
+```
+:::
+
+::: {.column width="50%"}
+```{.bash}
+# Terminal 3: la CLI también participa
+ros2 topic echo /topic
+ros2 topic pub --once /topic \
+  std_msgs/msg/String "{data: 'Hola desde la CLI'}"
+ros2 topic info /topic --verbose
+```
+:::
+
+::::
+
+::: {.callout-note}
+**QoS** (*Quality of Service*): fiabilidad, durabilidad, profundidad... Que dos nodos se descubran no garantiza que intercambien datos: si las QoS son **incompatibles**, ese par no se conecta. `ros2 topic info --verbose` muestra la QoS de cada extremo.
+:::
+
+::: {.notes}
+Mostrar en rqt_graph cómo el talker C++, el listener Python y el `topic echo` de la CLI aparecen conectados al mismo /topic.
+:::

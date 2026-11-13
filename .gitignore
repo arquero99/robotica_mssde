@@ -1,0 +1,16 @@
+# Quarto
+/.quarto/
+/_site/
+*_files/
+index.html
+
+# Workspace ROS 2
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Python
+__pycache__/
+*.pyc
+
+**/*.quarto_ipynb

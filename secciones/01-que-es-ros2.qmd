@@ -1,0 +1,77 @@
+# 1 · Qué es ROS 2 {.bloque}
+
+[8 min]{.tiempo}
+
+## ROS: la «fontanería» del robot
+
+**ROS** (*Robot Operating System*) es un ecosistema de código abierto para construir, desplegar, ejecutar y mantener aplicaciones robóticas.
+
+- A pesar del nombre, **no es un sistema operativo**: es un conjunto de librerías y herramientas que se ejecuta sobre Linux, Windows o macOS.
+- Resuelve la comunicación **entre** las partes de un robot y **dentro** de cada una: de la cámara al nodo de procesamiento, del planificador al controlador del motor.
+- Favorece software **modular y reutilizable**, compartido por una gran comunidad.
+
+**ROS 2** rediseña ROS 1 para los robots actuales: varios robots, redes poco fiables, sistemas embebidos y de tiempo real, y uso en producción.
+
+::: {.ref}
+[About ROS](https://docs.ros.org/en/lyrical/About-ROS.html)
+:::
+
+## El ecosistema en tres piezas
+
+:::: {.columns}
+
+::: {.column width="33%"}
+### Framework
+La comunicación:
+
+- Nodos
+- Topics, servicios y actions
+- Parámetros
+- Librerías cliente (C++, Python)
+- Middleware
+:::
+
+::: {.column width="33%"}
+### Herramientas
+Ayudan a desarrollar, no añaden comportamiento:
+
+- Introspección: `ros2 …`, `rqt`
+- Visualización: RViz
+- Arranque: *launch*
+- Grabación: *rosbag*
+- Compilación: `colcon`
+:::
+
+::: {.column width="33%"}
+### Capacidades
+Paquetes listos para usar:
+
+- **Simulación** (Gazebo)
+- **Navegación** (Nav2, EasyNav)
+- **Percepción**: cámaras, LIDAR, fusión sensorial
+:::
+
+::::
+
+::: {.notes}
+Hoy nos centramos en el *framework*: es la base de todo lo demás. Las herramientas las iremos usando sobre la marcha (CLI, rqt_graph, colcon, launch). Las capacidades son paquetes de la comunidad que se apoyan en lo que vamos a ver.
+:::
+
+## Qué vamos a aprender hoy
+
+```{mermaid}
+%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+flowchart LR
+  A[Instalar y elegir versión] --> B[Workspace y paquetes]
+  B --> C[Nodos]
+  C --> D[Topics]
+  C --> E[Servicios]
+  C --> F[Actions]
+  D & E --> G[Tipos propios msg/srv]
+  G --> F
+  C --> H[Parámetros]
+  D & H --> I[Launch]
+```
+
+- En cada caso: **qué es**, **cómo se usa desde la CLI** y **cómo se programa en C++ y en Python**.
+- La documentación oficial recomienda explorar primero con la CLI y después programar.

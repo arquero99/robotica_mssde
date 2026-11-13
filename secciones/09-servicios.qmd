@@ -1,0 +1,180 @@
+# 9 · Servicios {.bloque}
+
+[20 min]{.tiempo}
+
+## CLI: explorar y llamar servicios con turtlesim
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**Observar**
+```{.bash}
+ros2 service list -t                 # servicios y su tipo
+ros2 service type /clear             # std_srvs/srv/Empty
+ros2 service info /clear --verbose   # clientes y servidores
+ros2 service find std_srvs/srv/Empty # quién ofrece este tipo
+ros2 interface show turtlesim_msgs/srv/Spawn
+```
+:::
+
+::: {.column width="50%"}
+**Llamar** (`ros2 service call <nombre> <tipo> <request YAML>`)
+```{.bash}
+# Sin argumentos: borra el rastro de la tortuga
+ros2 service call /clear std_srvs/srv/Empty
+
+# Con request: crea una segunda tortuga
+ros2 service call /spawn turtlesim_msgs/srv/Spawn \
+  "{x: 2, y: 2, theta: 0.2, name: ''}"
+```
+
+```{.default}
+response:
+turtlesim_msgs.srv.Spawn_Response(name='turtle2')
+```
+:::
+
+::::
+
+**Introspección**: `ros2 service echo /add_two_ints` muestra las peticiones y respuestas que circulan, si los nodos tienen la introspección activada.
+
+::: {.ref}
+[Learning about services](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/services/Working-with-services/Understanding-ROS2-Services/Understanding-ROS2-Services.html)
+:::
+
+## Servidor
+
+Interfaz: `example_interfaces/srv/AddTwoInts` → request `int64 a, int64 b` y response `int64 sum`.
+
+::: {.panel-tabset}
+
+### C++
+
+```{.cpp include="ros2_ws/src/cpp_srvcli/src/add_two_ints_server.cpp" start-line=7 end-line=31 filename="src/add_two_ints_server.cpp"}
+```
+
+### Python
+
+```{.python include="ros2_ws/src/py_srvcli/py_srvcli/service_member_function.py" start-line=8 end-line=18 filename="py_srvcli/service_member_function.py"}
+```
+
+:::
+
+- `create_service(tipo, "nombre", callback)`: el callback recibe la **request**, rellena la **response** y debe terminar rápido.
+
+## Cliente (llamada asíncrona)
+
+::: {.panel-tabset}
+
+### C++
+
+```{.cpp include="ros2_ws/src/cpp_srvcli/src/add_two_ints_client.cpp" start-line=10 end-line=39 filename="src/add_two_ints_client.cpp"}
+```
+
+### Python
+
+```{.python include="ros2_ws/src/py_srvcli/py_srvcli/client_member_function.py" start-line=8 end-line=34 filename="py_srvcli/client_member_function.py"}
+```
+
+:::
+
+## Pasos del cliente y llamadas síncronas
+
+1. `create_client`: crear el cliente con el tipo y el nombre del servicio.
+2. `wait_for_service`: esperar a que el servidor esté disponible.
+3. `async_send_request` (C++) / `call_async` (Python): enviar la petición. Devuelve un **future**.
+4. `spin_until_future_complete`: atender callbacks hasta que llegue la respuesta.
+
+::: {.callout-warning}
+**Síncrono o asíncrono.** En C++ la API de llamada es solo asíncrona. En Python existe `call()` (síncrona), pero si se llama **desde un callback** puede bloquear el nodo (*deadlock*): la respuesta nunca se procesa porque el hilo está esperando. La documentación oficial recomienda `call_async()`.
+:::
+
+::: {.ref}
+[Synchronous vs. asynchronous service clients](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/services/Working-with-services/Sync-Vs-Async.html)
+:::
+
+## Configuración del paquete
+
+::: {.panel-tabset}
+
+### C++
+
+```{.bash}
+ros2 pkg create --build-type ament_cmake --license Apache-2.0 cpp_srvcli --dependencies rclcpp example_interfaces
+```
+
+```{.cmake}
+# CMakeLists.txt
+find_package(rclcpp REQUIRED)
+find_package(example_interfaces REQUIRED)
+
+add_executable(server src/add_two_ints_server.cpp)
+target_link_libraries(server PUBLIC rclcpp::rclcpp example_interfaces::example_interfaces)
+
+add_executable(client src/add_two_ints_client.cpp)
+target_link_libraries(client PUBLIC rclcpp::rclcpp example_interfaces::example_interfaces)
+
+install(TARGETS server client DESTINATION lib/${PROJECT_NAME})
+```
+
+### Python
+
+```{.bash}
+ros2 pkg create --build-type ament_python --license Apache-2.0 py_srvcli --dependencies rclpy example_interfaces
+```
+
+```{.python}
+# setup.py
+entry_points={
+    'console_scripts': [
+        'service = py_srvcli.service_member_function:main',
+        'client = py_srvcli.client_member_function:main',
+    ],
+},
+```
+
+:::
+
+::: {.ref}
+[Writing a simple service and client (C++)](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Writing-A-Simple-Cpp-Service-And-Client.html) · [(Python)](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.html)
+:::
+
+## Pruébalo
+
+```{.bash}
+cd ~/ros2_ws
+colcon build --packages-select cpp_srvcli py_srvcli
+```
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{.bash}
+# Terminal 1: servidor (C++ o Python)
+source install/setup.bash
+ros2 run cpp_srvcli server
+#   o bien: ros2 run py_srvcli service
+
+# Terminal 2: cliente (del otro lenguaje)
+source install/setup.bash
+ros2 run py_srvcli client
+#   [INFO] ... Result of add_two_ints: for 41 + 1 = 42
+```
+:::
+
+::: {.column width="50%"}
+```{.bash}
+# Terminal 3: llamar al mismo servicio desde la CLI
+ros2 service list -t
+ros2 service call /add_two_ints \
+  example_interfaces/srv/AddTwoInts "{a: 2, b: 3}"
+#   response:
+#   example_interfaces.srv.AddTwoInts_Response(sum=5)
+```
+:::
+
+::::
+
+::: {.notes}
+El cliente envía una sola petición y termina. El servidor sigue vivo atendiendo peticiones hasta Ctrl+C.
+:::

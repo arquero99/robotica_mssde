@@ -1,0 +1,168 @@
+# 13 · Launch files {.bloque}
+
+[12 min · formato Python]{.tiempo}
+
+## Para qué sirve *launch*
+
+Un sistema real tiene **muchos nodos**, cada uno con sus parámetros, remapeos y espacios de nombres. Abrir una terminal por nodo no escala.
+
+Un **launch file** describe el sistema y lo arranca con **un solo comando**:
+
+```{.bash}
+ros2 launch <paquete> <fichero_launch>      # instalado en un paquete
+ros2 launch ruta/al/fichero_launch.py       # directamente desde un fichero
+ros2 launch turtlesim multisim.launch.py    # ejemplo: dos turtlesim a la vez
+```
+
+- Formatos: **Python**, XML y YAML. Hoy usamos Python, el más flexible.
+- Por convención los launch files van en la carpeta `launch/` del paquete y su nombre **termina en `launch.py`**. Así `ros2 launch` los reconoce y autocompleta.
+- Para ver los argumentos de un launch file: `ros2 launch <paquete> <fichero> --show-args`.
+
+::: {.ref}
+[Launching multiple nodes](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/Working-with-nodes/Launching-Multiple-Nodes/Launching-Multiple-Nodes.html) · [Launch](https://docs.ros.org/en/lyrical/Developer-Tools/About-Launch.html)
+:::
+
+## Anatomía: namespaces y remapeos
+
+`py_launch_example/launch/turtlesim_mimic_launch.py` (ejemplo oficial):
+
+:::: {.columns}
+
+::: {.column width="55%"}
+```{.python include="ros2_ws/src/py_launch_example/launch/turtlesim_mimic_launch.py"}
+```
+:::
+
+::: {.column width="45%"}
+- `generate_launch_description()` devuelve un `LaunchDescription` con la lista de **acciones**.
+- `Node(...)`: `package` + `executable` es lo mismo que `ros2 run`.
+- `namespace`: dos turtlesim sin conflicto (`/turtlesim1/...`, `/turtlesim2/...`).
+- `name`: renombra el nodo.
+- `remappings`: conecta `mimic` con las dos tortugas.
+- `arguments` / `ros_arguments`: argumentos de línea de comandos, por ejemplo el nivel de log.
+:::
+
+::::
+
+::: {.ref}
+[Creating a launch file](https://docs.ros.org/en/lyrical/Developer-Tools/Launch/Creating-Launch-Files.html)
+:::
+
+## Argumentos y nodos C++ + Python
+
+`cpp_launch_example/launch/pubsub_mixto_launch.py`:
+
+:::: {.columns}
+
+::: {.column width="55%"}
+```{.python include="ros2_ws/src/cpp_launch_example/launch/pubsub_mixto_launch.py"}
+```
+:::
+
+::: {.column width="45%"}
+- `DeclareLaunchArgument`: argumento con valor por defecto y descripción.
+- `LaunchConfiguration('topic')`: su valor, que se resuelve **al lanzar** (*sustitución*).
+- Se cambia con `topic:=saludos`; `--show-args` los lista.
+- Nodos **C++ y Python** en el mismo fichero.
+- Parámetros: `parameters=[{'clave': valor}]` o un fichero YAML.
+:::
+
+::::
+
+::: {.ref}
+[Using substitutions](https://docs.ros.org/en/lyrical/Developer-Tools/Launch/Using-Substitutions.html)
+:::
+
+## Instalar launch files en un paquete
+
+::: {.panel-tabset}
+
+### C++
+
+```{.bash}
+ros2 pkg create --build-type ament_cmake --license Apache-2.0 cpp_launch_example
+mkdir cpp_launch_example/launch
+```
+
+```{.cmake include="ros2_ws/src/cpp_launch_example/CMakeLists.txt" start-line=6 end-line=10}
+```
+
+### Python
+
+```{.bash}
+ros2 pkg create --build-type ament_python --license Apache-2.0 py_launch_example
+mkdir py_launch_example/launch
+```
+
+```{.python}
+import os
+from glob import glob
+# ...
+```
+
+```{.python include="ros2_ws/src/py_launch_example/setup.py" start-line=12 end-line=18 dedent=4}
+```
+
+:::
+
+En ambos casos, en `package.xml`:
+
+```{.xml}
+<exec_depend>ros2launch</exec_depend>
+<!-- y los paquetes cuyos nodos se lanzan, p. ej.: -->
+<exec_depend>turtlesim</exec_depend>
+```
+
+::: {.ref}
+[Integrating launch files into ROS 2 packages](https://docs.ros.org/en/lyrical/Developer-Tools/Launch/Launch-system.html)
+:::
+
+## Pruébalo
+
+```{.bash}
+cd ~/ros2_ws
+colcon build --packages-up-to cpp_launch_example py_launch_example
+source install/setup.bash
+```
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**Mimic**: la tortuga 2 copia a la 1
+```{.bash}
+# Terminal 1
+ros2 launch py_launch_example turtlesim_mimic_launch.py
+
+# Terminal 2: mover la tortuga 1
+ros2 topic pub -r 1 /turtlesim1/turtle1/cmd_vel \
+  geometry_msgs/msg/Twist \
+  "{linear: {x: 2.0}, angular: {z: -1.8}}"
+
+# Terminal 3
+ros2 run rqt_graph rqt_graph
+```
+:::
+
+::: {.column width="50%"}
+**Talker C++ + listener Python**
+```{.bash}
+ros2 launch cpp_launch_example pubsub_mixto_launch.py --show-args
+ros2 launch cpp_launch_example pubsub_mixto_launch.py topic:=saludos
+
+# En otra terminal
+ros2 node list          # /talker_cpp  /listener_py
+ros2 topic list         # /saludos
+ros2 topic echo /saludos
+```
+
+**Parámetros desde launch** (bloque 12)
+```{.bash}
+ros2 launch cpp_parameters cpp_parameters_launch.py
+```
+:::
+
+::::
+
+::: {.notes}
+Ctrl+C en la terminal del launch para todos los nodos que arrancó.
+:::

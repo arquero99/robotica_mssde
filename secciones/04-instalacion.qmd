@@ -1,0 +1,58 @@
+# 4 · Instalación {.bloque}
+
+[2 min · referencia: hazlo **antes** de la sesión]{.tiempo}
+
+## Instalar Lyrical en Ubuntu 26.04 {.instalacion}
+
+:::: {.columns}
+
+::: {.column width="60%"}
+```{.bash}
+# 1. Locale UTF-8
+sudo apt update && sudo apt install locales
+sudo locale-gen en_US en_US.UTF-8
+sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+# 2. Repositorio universe + fuentes de ROS 2
+sudo apt install software-properties-common
+sudo add-apt-repository universe
+sudo apt update && sudo apt install curl -y
+export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F'"' '{print $4}')
+curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo ${UBUNTU_CODENAME:-${VERSION_CODENAME}})_all.deb"
+sudo dpkg -i /tmp/ros2-apt-source.deb
+
+# 3. Herramientas de desarrollo (colcon, rosdep...) y ROS
+sudo apt update && sudo apt install ros-dev-tools
+sudo apt upgrade
+sudo apt install ros-lyrical-desktop    # o ros-lyrical-ros-base (sin GUI)
+sudo apt install ros-lyrical-turtlesim  # demos de CLI
+sudo apt install ros-lyrical-rqt ros-lyrical-rqt-common-plugins  # rqt_graph
+```
+:::
+
+::: {.column width="40%"}
+```{.bash}
+# 4. Entorno: en cada terminal
+source /opt/ros/lyrical/setup.bash
+# ...o siempre, desde ~/.bashrc
+echo "source /opt/ros/lyrical/setup.bash" >> ~/.bashrc
+printenv | grep -i ROS   # ROS_DISTRO=lyrical
+
+# 5. Prueba: C++ habla, Python escucha
+ros2 run demo_nodes_cpp talker     # terminal 1
+ros2 run demo_nodes_py listener    # terminal 2
+
+# 6. turtlesim
+ros2 run turtlesim turtlesim_node      # terminal 1
+ros2 run turtlesim turtle_teleop_key   # terminal 2
+```
+
+El código completo se puede copiar con el botón de cada bloque.
+
+::: {.ref}
+[Installing on Ubuntu](https://docs.ros.org/en/lyrical/Get-Started/Installation/Ubuntu-Install-Debs.html) · [Setting up your environment](https://docs.ros.org/en/lyrical/Get-Started/Configuring-ROS2-Environment.html) · [Turtlesim](https://docs.ros.org/en/lyrical/Get-Started/Introducing-Turtlesim/Introducing-Turtlesim.html)
+:::
+:::
+
+::::

@@ -1,0 +1,110 @@
+# 6 · Primer nodo {.bloque}
+
+[15 min]{.tiempo}
+
+## Anatomía de un nodo
+
+```{mermaid}
+%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+flowchart LR
+  A["init<br/>inicializar ROS"] --> B["crear el nodo<br/>(clase que hereda de Node)"]
+  B --> C["spin<br/>atender callbacks:<br/>timers, suscripciones, servicios..."]
+  C -->|Ctrl+C| D["shutdown<br/>liberar recursos"]
+```
+
+| Paso | C++ (`rclcpp`) | Python (`rclpy`) |
+|---|---|---|
+| Inicializar | `rclcpp::init(argc, argv)` | `with rclpy.init():` |
+| Nodo | `class MyNode : public rclcpp::Node` | `class MyNode(Node):` |
+| Timer | `create_wall_timer(1s, callback)` | `create_timer(1.0, callback)` |
+| Log | `RCLCPP_INFO(get_logger(), "...")` | `self.get_logger().info('...')` |
+| Bucle | `rclcpp::spin(node)` | `rclpy.spin(node)` |
+| Cerrar | `rclcpp::shutdown()` | automático al salir del `with` |
+
+::: {.ref}
+[Nodes](https://docs.ros.org/en/lyrical/ROS-Framework/About-Nodes.html) · [Logging](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/About-Logging/About-Logging.html)
+:::
+
+## Un nodo con timer y log
+
+::: {.panel-tabset}
+
+### C++
+
+```{.cpp include="ros2_ws/src/my_package_cpp/src/my_node.cpp" filename="src/my_node.cpp"}
+```
+
+### Python
+
+```{.python include="ros2_ws/src/my_package_py/my_package_py/my_node.py" filename="my_package_py/my_node.py"}
+```
+
+:::
+
+::: {.notes}
+Este código sustituye al "hola mundo" generado por `--node-name`. Resaltar: en Lyrical, Python usa `with rclpy.init()` (gestor de contexto) y captura `ExternalShutdownException`. Si veis tutoriales antiguos con `rclpy.shutdown()` explícito, es el estilo de distribuciones anteriores.
+:::
+
+## Registrar el ejecutable
+
+::: {.panel-tabset}
+
+### C++
+
+```{.cmake include="ros2_ws/src/my_package_cpp/CMakeLists.txt" start-line=13 end-line=23 filename="CMakeLists.txt"}
+```
+
+En `package.xml`: `<depend>rclcpp</depend>`
+
+### Python
+
+```{.python include="ros2_ws/src/my_package_py/setup.py" start-line=23 end-line=27 dedent=4 filename="setup.py"}
+```
+
+En `package.xml`: `<exec_depend>rclpy</exec_depend>`
+
+:::
+
+- C++: `add_executable` compila, `target_link_libraries` enlaza con `rclcpp` y `install` copia el binario a `install/<pkg>/lib/<pkg>/`. Ahí lo busca `ros2 run`.
+- Python: cada entrada de `console_scripts` crea un ejecutable `nombre = paquete.módulo:función`.
+
+## Pruébalo + CLI de nodos
+
+```{.bash}
+cd ~/ros2_ws
+colcon build --packages-select my_package_cpp my_package_py
+```
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{.bash}
+# Terminal 1
+source install/setup.bash
+ros2 run my_package_cpp my_node
+
+# Terminal 2
+source install/setup.bash
+ros2 run my_package_py my_node
+```
+:::
+
+::: {.column width="50%"}
+```{.bash}
+# Terminal 3: inspección
+ros2 node list            # /my_node_cpp  /my_node_py
+ros2 node info /my_node_cpp
+
+# Renombrar el nodo al lanzarlo
+ros2 run my_package_cpp my_node --ros-args --remap __node:=otro_nombre
+
+# Cambiar el nivel de log
+ros2 run my_package_py my_node --ros-args --log-level debug
+```
+:::
+
+::::
+
+::: {.ref}
+[Learning about nodes](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/Working-with-nodes/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.html)
+:::

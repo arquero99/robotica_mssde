@@ -1,0 +1,154 @@
+/*-- scss:defaults --*/
+
+// Paleta: azul oscuro (títulos), azul (enlaces/acento), naranja (avisos)
+$ros-navy: #22314e;
+$ros-blue: #1f6fb2;
+$ros-orange: #d9822b;
+$ros-grey: #5b6472;
+
+$body-bg: #ffffff;
+$body-color: #1f2328;
+$link-color: $ros-blue;
+$presentation-heading-color: $ros-navy;
+$presentation-heading-font-weight: 600;
+$presentation-font-size-root: 28px;
+$presentation-h2-font-size: 1.45em;
+$presentation-h3-font-size: 1.1em;
+
+$code-block-font-size: 0.5em;
+$code-block-bg: #f6f8fa;
+$code-color: #8a2b2b;
+
+// Fuente de sistema para mermaid: se mide igual que se dibuja (evita etiquetas recortadas)
+$mermaid-font-family: Arial, "Liberation Sans", "Helvetica Neue", Helvetica, sans-serif;
+
+/*-- scss:rules --*/
+
+.reveal .slides section {
+  text-align: left;
+}
+
+// Portadas de bloque
+.reveal .slides section.bloque h1 {
+  color: $ros-navy;
+  font-size: 2.1em;
+}
+
+.reveal .slides section.bloque p {
+  color: $ros-grey;
+}
+
+// Bloques de código: altura limitada y scroll
+.reveal pre {
+  margin: 8px 0;
+  box-shadow: none;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+}
+
+.reveal pre code {
+  max-height: 360px;
+  padding: 8px 12px;
+}
+
+// Diapositivas con código + viñetas debajo
+.reveal section.codigo-medio pre code {
+  max-height: 320px;
+}
+
+// Diapositiva de instalación: mostrar el bloque completo
+.reveal section.instalacion pre code {
+  max-height: 560px;
+}
+
+.reveal pre.sourceCode.console code,
+.reveal pre.sourceCode.bash code {
+  background: #f3f5f8;
+}
+
+// Texto pequeño y notas al pie
+.reveal .small {
+  font-size: 0.75em;
+}
+
+.reveal .xsmall {
+  font-size: 0.62em;
+}
+
+// Enlace al tutorial oficial
+.reveal .ref {
+  font-size: 0.55em;
+  color: $ros-grey;
+  margin-top: 0.6em;
+}
+
+.reveal .ref p {
+  margin: 0;
+}
+
+.reveal .ref p:first-child::before {
+  content: "Documentación oficial: ";
+  font-weight: 600;
+}
+
+// Diagramas mermaid: limitar altura
+.reveal .cell-output-display svg,
+.reveal .mermaid svg {
+  max-height: 400px;
+}
+
+// Etiquetas de tiempo y de lenguaje
+.reveal .tiempo {
+  display: inline-block;
+  font-size: 0.55em;
+  color: #fff;
+  background: $ros-navy;
+  border-radius: 4px;
+  padding: 2px 8px;
+  vertical-align: middle;
+}
+
+// Tablas compactas
+.reveal table {
+  font-size: 0.62em;
+}
+
+.reveal table th {
+  color: $ros-navy;
+}
+
+// Agenda en dos columnas
+.reveal .agenda table {
+  font-size: 0.72em;
+  width: 100%;
+}
+
+// Pestañas C++ | Python más compactas
+.reveal .panel-tabset .nav-tabs .nav-link {
+  padding: 4px 14px;
+  font-size: 0.6em;
+}
+
+.reveal .panel-tabset .tab-content {
+  padding-top: 4px;
+}
+
+.reveal .panel-tabset pre code {
+  max-height: 310px;
+}
+
+// Avisos
+.reveal .callout {
+  font-size: 0.7em;
+}
+
+// Listas más compactas
+.reveal ul li,
+.reveal ol li {
+  margin-bottom: 0.15em;
+}
+
+.reveal .resaltado {
+  color: $ros-orange;
+  font-weight: 600;
+}

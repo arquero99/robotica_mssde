@@ -1,0 +1,100 @@
+# 12 · Parámetros {.bloque}
+
+[10 min]{.tiempo}
+
+## Parámetros: configurar sin recompilar
+
+- Valores de configuración **de cada nodo**. Viven mientras vive el nodo.
+- Se fijan **al arrancar** (CLI, YAML, launch) y se pueden **cambiar en ejecución**.
+- Cada parámetro tiene **nombre**, **valor** y un **descriptor** opcional (descripción, rangos, solo lectura...).
+- Tipos: `bool`, `int64`, `float64`, `string`, `byte[]`, `bool[]`, `int64[]`, `float64[]`, `string[]`.
+- Todo nodo tiene `use_sim_time` (por defecto `false`).
+
+```{.bash}
+ros2 param list                              # parámetros de todos los nodos
+ros2 param get /turtlesim background_g
+ros2 param set /turtlesim background_r 150   # el fondo cambia al instante
+ros2 param describe /turtlesim background_r
+ros2 param dump /turtlesim > turtlesim.yaml  # guardar la configuración
+ros2 param load /turtlesim turtlesim.yaml    # cargarla en un nodo en marcha
+ros2 run turtlesim turtlesim_node --ros-args --params-file turtlesim.yaml   # al arrancar
+ros2 run turtlesim turtlesim_node --ros-args -p background_r:=255           # uno suelto
+```
+
+::: {.ref}
+[Parameters](https://docs.ros.org/en/lyrical/ROS-Framework/About-Parameters.html) · [Learning about parameters](https://docs.ros.org/en/lyrical/ROS-Framework/parameters/Working-with-parameters/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.html) · [Using ros2 param](https://docs.ros.org/en/lyrical/ROS-Framework/parameters/Working-with-parameters/Using-ros2-param.html)
+:::
+
+## Declarar y leer parámetros en un nodo
+
+::: {.panel-tabset}
+
+### C++
+
+```{.cpp include="ros2_ws/src/cpp_parameters/src/cpp_parameters_node.cpp" start-line=9 end-line=33 filename="src/cpp_parameters_node.cpp"}
+```
+
+### Python
+
+```{.python include="ros2_ws/src/python_parameters/python_parameters/python_parameters_node.py" start-line=7 end-line=28 filename="python_parameters/python_parameters_node.py"}
+```
+
+:::
+
+- `declare_parameter(nombre, defecto, descriptor)`: por defecto un nodo solo acepta los parámetros **declarados**.
+- `get_parameter(nombre)` lee el valor. Ojo: el ejemplo vuelve a poner `world` en cada ciclo.
+
+::: {.notes}
+El ejemplo oficial llama a `set_parameters` en cada ciclo para devolver el valor a `world`, así que un `ros2 param set` solo se ve una vez. En C++ el valor se lee con `as_string()`; en Python con `.get_parameter_value().string_value`.
+:::
+
+## Pruébalo
+
+```{.bash}
+cd ~/ros2_ws
+colcon build --packages-select cpp_parameters python_parameters
+```
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{.bash}
+# Terminal 1 (C++ o Python)
+source install/setup.bash
+ros2 run cpp_parameters minimal_param_node
+#   [INFO] [minimal_param_node]: Hello world!
+```
+
+```{.bash}
+# Terminal 2
+ros2 param list /minimal_param_node
+ros2 param describe /minimal_param_node my_parameter
+ros2 param set /minimal_param_node my_parameter earth
+#   [INFO] [minimal_param_node]: Hello earth!
+```
+:::
+
+::: {.column width="50%"}
+```{.bash}
+# Fijarlo al arrancar
+ros2 run python_parameters minimal_param_node \
+  --ros-args -p my_parameter:=mars
+```
+
+```{.bash}
+# Con un launch file (lo vemos en el bloque 13)
+ros2 launch cpp_parameters cpp_parameters_launch.py
+ros2 launch python_parameters python_parameters_launch.py
+#   [INFO] [custom_minimal_param_node]: Hello earth!
+```
+:::
+
+::::
+
+::: {.callout-tip}
+Para reaccionar a los cambios, un nodo puede registrar *callbacks* de parámetros: antes de aplicar el cambio, para validarlo o rechazarlo, y después de aplicarlo. Ver [Parameters](https://docs.ros.org/en/lyrical/ROS-Framework/About-Parameters.html) y [Monitoring for parameter changes](https://docs.ros.org/en/lyrical/ROS-Framework/parameters/Working-with-parameters/Monitoring-For-Parameter-Changes-CPP.html).
+:::
+
+::: {.ref}
+[Using parameters in a class (C++)](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Using-Parameters-In-A-Class-CPP.html) · [(Python)](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Using-Parameters-In-A-Class-Python.html)
+:::

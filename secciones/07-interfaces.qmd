@@ -1,0 +1,136 @@
+# 7 · Interfaces {.bloque}
+
+[10 min]{.tiempo}
+
+## Tres formas de comunicarse
+
+:::: {.columns}
+
+::: {.column width="33%"}
+### Topic
+```{mermaid}
+%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+flowchart TB
+  P[Publicador] --> T((topic))
+  T --> S1[Suscriptor]
+  T --> S2[Suscriptor]
+```
+Flujo continuo de datos: sensores, estado del robot.
+:::
+
+::: {.column width="33%"}
+### Servicio
+```{mermaid}
+sequenceDiagram
+  participant C as Cliente
+  participant S as Servidor
+  C->>S: Request
+  S-->>C: Response
+```
+Consultas rápidas: configuración, cálculos cortos.
+:::
+
+::: {.column width="33%"}
+### Action
+```{mermaid}
+sequenceDiagram
+  participant C as Cliente
+  participant S as Servidor
+  C->>S: Goal
+  S-->>C: Feedback
+  S-->>C: Result
+```
+Tareas largas: mover el robot a una posición.
+:::
+
+::::
+
+|  | Patrón | Dirección | Resultado | Uso típico | Cancelable |
+|---|---|---|---|---|---|
+| **Topic** | publicar/suscribir | un sentido | no | datos continuos | no |
+| **Servicio** | petición/respuesta | dos sentidos | sí | consultas rápidas | no |
+| **Action** | goal/feedback/result | dos sentidos + feedback | sí | tareas largas | **sí** |
+
+::: {.ref}
+[Interfaces (topics, services, actions)](https://docs.ros.org/en/lyrical/ROS-Framework/Interfaces-Topics-Services-Actions.html)
+:::
+
+## Ficheros de interfaz: `.msg`, `.srv`, `.action`
+
+:::: {.columns}
+
+::: {.column width="33%"}
+**`.msg`**: campos de un mensaje
+
+```{.default}
+# geometry_msgs/msg/Point
+float64 x
+float64 y
+float64 z
+```
+:::
+
+::: {.column width="33%"}
+**`.srv`**: request `---` response
+
+```{.default}
+# example_interfaces/srv/AddTwoInts
+int64 a
+int64 b
+---
+int64 sum
+```
+:::
+
+::: {.column width="33%"}
+**`.action`**: goal `---` result `---` feedback
+
+```{.default}
+# custom_action_interfaces/action/Fibonacci
+int32 order
+---
+int32[] sequence
+---
+int32[] sequence
+```
+:::
+
+::::
+
+- **Tipos básicos**: `bool`, `int8`…`int64`, `uint8`…`uint64`, `float32`, `float64`, `string`; y otros mensajes, como `geometry_msgs/Point`.
+- **Arrays**: `int32[]` (sin límite), `int32[5]` (fijo), `int32[<=5]` (acotado). Cadenas acotadas: `string<=10`.
+- **Valores por defecto**: `uint8 x 42`. **Constantes**: `int32 MAX=100` (nombre en mayúsculas).
+- **Nombre completo** de un tipo: `paquete/msg/Tipo`, `paquete/srv/Tipo` o `paquete/action/Tipo`.
+
+::: {.ref}
+[Interface specifications](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/Working-with-interfaces/Interface-specifications.html)
+:::
+
+## CLI: `ros2 interface`
+
+```{.bash}
+ros2 interface list                      # todas las interfaces instaladas
+ros2 interface packages                  # paquetes que definen interfaces
+ros2 interface package std_msgs          # interfaces de un paquete
+ros2 interface show geometry_msgs/msg/Twist          # definición (expande tipos anidados)
+ros2 interface proto geometry_msgs/msg/Twist         # plantilla YAML para rellenar en la CLI
+```
+
+```{.default}
+$ ros2 interface show geometry_msgs/msg/Twist
+# This expresses velocity in free space broken into its linear and angular parts.
+Vector3  linear
+        float64 x
+        float64 y
+        float64 z
+Vector3  angular
+        float64 x
+        float64 y
+        float64 z
+```
+
+**Paquetes de interfaces habituales**: `std_msgs`, `geometry_msgs`, `sensor_msgs`, `nav_msgs`, `example_interfaces`, `std_srvs`.
+
+::: {.callout-tip}
+Antes de definir un tipo propio, busca uno estándar que te sirva. Los tipos estándar facilitan reutilizar herramientas y paquetes de otros.
+:::

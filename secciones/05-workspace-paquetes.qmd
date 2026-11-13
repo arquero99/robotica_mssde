@@ -1,0 +1,171 @@
+# 5 · Workspace y paquetes {.bloque}
+
+[18 min]{.tiempo}
+
+## Workspace: underlay y overlay
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Un **workspace** es un directorio con paquetes ROS que se compilan juntos.
+
+```{.default}
+ros2_ws/
+├── src/       # tus paquetes (código fuente)
+├── build/     # ficheros intermedios  (colcon)
+├── install/   # lo que se ejecuta     (colcon)
+└── log/       # registros             (colcon)
+```
+:::
+
+::: {.column width="50%"}
+- **Underlay**: entorno sobre el que construyes. Aquí es `/opt/ros/lyrical`.
+- **Overlay**: tu workspace, "encima" del underlay. Sus paquetes **sustituyen** a los del underlay con el mismo nombre.
+
+| Fichero | Carga |
+|---|---|
+| `install/setup.bash` | overlay **+** underlay |
+| `install/local_setup.bash` | solo el overlay |
+:::
+
+::::
+
+::: {.callout-important}
+Compila en una terminal y **carga el overlay en otra nueva**. Mezclar ambas cosas en la misma terminal puede dar problemas difíciles de diagnosticar.
+:::
+
+::: {.ref}
+[Creating a workspace](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html)
+:::
+
+## Compilar con `colcon` y resolver dependencias con `rosdep`
+
+```{.bash}
+mkdir -p ~/ros2_ws/src && cd ~/ros2_ws        # crear el workspace
+
+# Dependencias declaradas en los package.xml (rosdep viene con ros-dev-tools)
+sudo rosdep init && rosdep update             # solo la primera vez
+rosdep install -i --from-path src --rosdistro lyrical -y
+
+colcon build                                  # compilar todo, siempre desde la raíz del workspace
+source install/setup.bash                     # (en otra terminal) usar lo compilado
+```
+
+| Opción de `colcon build` | Para qué |
+|---|---|
+| `--packages-select pkg` | compilar solo `pkg` |
+| `--packages-up-to pkg` | `pkg` y sus dependencias |
+| `--symlink-install` | enlazar en lugar de copiar: los cambios en Python, launch o YAML no requieren recompilar |
+| `--event-handlers console_direct+` | ver la salida del compilador en la terminal |
+
+Para excluir un paquete de la compilación, crea un fichero vacío `COLCON_IGNORE` en su carpeta. Para ejecutar los tests: `colcon test`.
+
+::: {.ref}
+[Using colcon to build packages](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Colcon-Tutorial.html) · [rosdep](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Rosdep.html)
+:::
+
+## Paquete: la unidad de organización
+
+Un paquete agrupa código, interfaces, launch files y configuración, con sus dependencias declaradas en `package.xml`.
+
+:::: {.columns}
+
+::: {.column width="50%"}
+### C++: `ament_cmake`
+```{.default}
+my_package_cpp/
+├── CMakeLists.txt     ← cómo compilar
+├── package.xml        ← metadatos y dependencias
+├── include/my_package_cpp/
+└── src/               ← código .cpp
+```
+:::
+
+::: {.column width="50%"}
+### Python: `ament_python`
+```{.default}
+my_package_py/
+├── package.xml        ← metadatos y dependencias
+├── setup.py           ← cómo instalar + ejecutables
+├── setup.cfg
+├── resource/my_package_py
+└── my_package_py/     ← módulo Python
+    └── __init__.py
+```
+:::
+
+::::
+
+- Cada paquete en **su propia carpeta** dentro de `src/`. No se anidan.
+- Las **interfaces** (`.msg`, `.srv`, `.action`) se definen en paquetes `ament_cmake`, aunque se usen desde Python.
+
+## Crear un paquete: `ros2 pkg create`
+
+```{.bash}
+cd ~/ros2_ws/src
+
+# C++
+ros2 pkg create --build-type ament_cmake --license Apache-2.0 --node-name my_node my_package_cpp
+
+# Python
+ros2 pkg create --build-type ament_python --license Apache-2.0 --node-name my_node my_package_py
+```
+
+| Opción | Efecto |
+|---|---|
+| `--build-type` | `ament_cmake` (C++) o `ament_python` (Python) |
+| `--node-name my_node` | genera un ejecutable "hola mundo" y lo registra |
+| `--dependencies rclcpp std_msgs …` | añade las dependencias al `package.xml` (y al `CMakeLists.txt`) |
+| `--license Apache-2.0` | licencia del paquete |
+
+::: {.ref}
+[Creating a package](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Creating-Your-First-ROS2-Package.html)
+:::
+
+## `package.xml`: metadatos y dependencias
+
+::: {.panel-tabset}
+
+### C++
+
+```{.xml include="ros2_ws/src/my_package_cpp/package.xml"}
+```
+
+### Python
+
+```{.xml include="ros2_ws/src/my_package_py/package.xml"}
+```
+
+:::
+
+- `<depend>`: necesario para compilar y para ejecutar. `<exec_depend>`: solo para ejecutar (lo habitual en Python).
+- `rosdep` lee estas etiquetas para instalar lo que falte.
+
+## Pruébalo: compilar y ejecutar
+
+```{.bash}
+cd ~/ros2_ws
+colcon build --packages-select my_package_cpp my_package_py
+```
+
+En **otra terminal**:
+
+```{.bash}
+cd ~/ros2_ws
+source install/setup.bash
+ros2 run my_package_cpp my_node     # hello world my_package_cpp package
+ros2 run my_package_py my_node      # Hi from my_package_py.
+```
+
+Para inspeccionar paquetes desde la CLI:
+
+```{.bash}
+ros2 pkg list | grep my_          # paquetes visibles en el entorno
+ros2 pkg executables my_package_cpp
+ros2 pkg prefix my_package_py     # dónde está instalado
+ros2 pkg xml my_package_cpp       # su package.xml
+```
+
+::: {.notes}
+El "hola mundo" que genera `--node-name` todavía no es un nodo ROS: no llama a rclcpp/rclpy. En el siguiente bloque lo sustituimos por un nodo de verdad.
+:::
