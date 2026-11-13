@@ -2,6 +2,8 @@
 
 Repositorio para albergar tutoriales sobre ROS2. Master en sistemas empotrados y distribuidos. ETSISI UPM.
 
+**▶ Ver la presentación online:** <https://arquero99.github.io/robotica_mssde/>
+
 ## Sesión «ROS 2 Lyrical Luth» (≈ 3 h)
 
 Presentación en [Quarto](https://quarto.org) (revealjs) basada en los tutoriales oficiales de ROS 2 Lyrical (<https://docs.ros.org/en/lyrical/>). Cada concepto se explica desde la **CLI** (`ros2 …`), en **C++** (`rclcpp`) y en **Python** (`rclpy`).
@@ -69,7 +71,9 @@ source install/setup.bash
 
 ## Ver o generar la presentación
 
-Requiere Quarto ≥ 1.4.
+La versión publicada está en <https://arquero99.github.io/robotica_mssde/> y se actualiza automáticamente con cada push a `main` (GitHub Actions → GitHub Pages).
+
+Para generarla en local se requiere Quarto ≥ 1.4.
 
 ```bash
 quarto preview            # servidor local con recarga automática
