@@ -36,7 +36,7 @@ sequenceDiagram
 [Actions](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/About-Actions.html)
 :::
 
-## CLI: actions con turtlesim
+## CLI: actions con turtlesim {#actions-cli}
 
 Con `turtle_teleop_key`, las teclas `G|B|V|C|D|E|R|T` envían un goal de **rotación absoluta**, y `F` lo cancela.
 
@@ -87,120 +87,5 @@ Goal finished with status: SUCCEEDED
 ::::
 
 ::: {.ref}
-[Learning about actions](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/actions/Working-with-actions/Understanding-ROS2-Actions/Understanding-ROS2-Actions.html)
-:::
-
-## Definir la action (igual que msg/srv)
-
-:::: {.columns}
-
-::: {.column width="40%"}
-```{.bash}
-cd ~/ros2_ws/src
-ros2 pkg create --build-type ament_cmake \
-  --license Apache-2.0 custom_action_interfaces
-mkdir custom_action_interfaces/action
-```
-
-`action/Fibonacci.action`: goal `---` result `---` feedback
-
-```{.default include="ros2_ws/src/custom_action_interfaces/action/Fibonacci.action"}
-```
-:::
-
-::: {.column width="60%"}
-```{.cmake}
-# CMakeLists.txt
-find_package(rosidl_default_generators REQUIRED)
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "action/Fibonacci.action"
-)
-```
-
-```{.xml}
-<!-- package.xml -->
-<buildtool_depend>rosidl_default_generators</buildtool_depend>
-<exec_depend>rosidl_default_runtime</exec_depend>
-<member_of_group>rosidl_interface_packages</member_of_group>
-```
-
-```{.bash}
-cd ~/ros2_ws && colcon build --packages-select custom_action_interfaces
-source install/setup.bash
-ros2 interface show custom_action_interfaces/action/Fibonacci
-```
-:::
-
-::::
-
-::: {.ref}
-[Creating an action](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/actions/Working-with-actions/Creating-an-Action.html)
-:::
-
-## Servidor C++ (1/2): crear el servidor
-
-```{.cpp include="ros2_ws/src/custom_action_cpp/src/fibonacci_action_server.cpp" start-line=14 end-line=58}
-```
-
-## Servidor C++ (2/2): ejecutar el goal {.codigo-medio}
-
-```{.cpp include="ros2_ws/src/custom_action_cpp/src/fibonacci_action_server.cpp" start-line=63 end-line=96 dedent=2}
-```
-
-- `publish_feedback()` envía el progreso; `succeed()` / `canceled()` terminan el goal.
-- `is_canceling()` en cada iteración: **cancelación limpia**. `execute` corre en otro hilo.
-
-## Cliente C++ (1/2): enviar el goal
-
-```{.cpp include="ros2_ws/src/custom_action_cpp/src/fibonacci_action_client.cpp" start-line=34 end-line=58 dedent=2}
-```
-
-## Cliente C++ (2/2): feedback y resultado
-
-```{.cpp include="ros2_ws/src/custom_action_cpp/src/fibonacci_action_client.cpp" start-line=60 end-line=96 dedent=2}
-```
-
-`async_send_goal` no bloquea: el progreso llega por `feedback_callback` y el final por `result_callback`.
-
-## Configuración y prueba (C++)
-
-```{.bash}
-cd ~/ros2_ws/src
-ros2 pkg create --dependencies custom_action_interfaces rclcpp rclcpp_action rclcpp_components \
-  --license Apache-2.0 -- custom_action_cpp
-```
-
-El servidor y el cliente se compilan como **componentes** (`rclcpp_components_register_node`). Cada uno genera además un ejecutable. El `CMakeLists.txt` completo está en `ros2_ws/src/custom_action_cpp/`.
-
-:::: {.columns}
-
-::: {.column width="50%"}
-```{.bash}
-cd ~/ros2_ws
-colcon build --packages-up-to custom_action_cpp
-
-# Terminal 1
-source install/setup.bash
-ros2 run custom_action_cpp fibonacci_action_server
-
-# Terminal 2
-source install/setup.bash
-ros2 run custom_action_cpp fibonacci_action_client
-```
-:::
-
-::: {.column width="50%"}
-```{.bash}
-# Terminal 3: el mismo servidor desde la CLI
-ros2 action list -t
-ros2 action send_goal --feedback /fibonacci \
-  custom_action_interfaces/action/Fibonacci "{order: 5}"
-```
-:::
-
-::::
-
-::: {.ref}
-[Writing an action server and client (C++)](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/actions/Working-with-actions/Writing-an-Action-Server-Client/Cpp.html)
+[Learning about actions](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/actions/Working-with-actions/Understanding-ROS2-Actions/Understanding-ROS2-Actions.html) · [Definición a través de la API](#actions-api)
 :::

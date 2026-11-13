@@ -1,10 +1,9 @@
-#include <chrono>
 #include <functional>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include <rclcpp/rclcpp.hpp>
-
-using namespace std::chrono_literals;
 
 class MinimalParam : public rclcpp::Node
 {
@@ -16,20 +15,25 @@ public:
     param_desc.description = "This parameter is mine!";
 
     this->declare_parameter("my_parameter", "world", param_desc);
+    std::string my_param = this->get_parameter("my_parameter").as_string();
+    RCLCPP_INFO(this->get_logger(), "Hello %s!", my_param.c_str());
 
-    auto timer_callback = [this](){
-      std::string my_param = this->get_parameter("my_parameter").as_string();
-
-      RCLCPP_INFO(this->get_logger(), "Hello %s!", my_param.c_str());
-
-      std::vector<rclcpp::Parameter> all_new_parameters{rclcpp::Parameter("my_parameter", "world")};
-      this->set_parameters(all_new_parameters);
-    };
-    timer_ = this->create_wall_timer(1000ms, timer_callback);
+    // Se llama cada vez que cambian parámetros del nodo (ros2 param set, load...)
+    param_callback_handle_ = this->add_post_set_parameters_callback(
+      std::bind(&MinimalParam::on_param_change, this, std::placeholders::_1));
   }
 
 private:
-  rclcpp::TimerBase::SharedPtr timer_;
+  void on_param_change(const std::vector<rclcpp::Parameter> & parameters)
+  {
+    for (const auto & param : parameters) {
+      if (param.get_name() == "my_parameter") {
+        RCLCPP_INFO(this->get_logger(), "Hello %s!", param.as_string().c_str());
+      }
+    }
+  }
+
+  rclcpp::node_interfaces::PostSetParametersCallbackHandle::SharedPtr param_callback_handle_;
 };
 
 int main(int argc, char ** argv)

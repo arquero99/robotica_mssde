@@ -12,6 +12,8 @@
   <exec_depend>ros2launch</exec_depend>
   <exec_depend>cpp_pubsub</exec_depend>
   <exec_depend>py_pubsub</exec_depend>
+  <exec_depend>cpp_parameters</exec_depend>
+  <exec_depend>python_parameters</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

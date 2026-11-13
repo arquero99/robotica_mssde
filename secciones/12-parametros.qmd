@@ -29,21 +29,22 @@ ros2 run turtlesim turtlesim_node --ros-args -p background_r:=255           # un
 
 ### C++
 
-```{.cpp include="ros2_ws/src/cpp_parameters/src/cpp_parameters_node.cpp" start-line=9 end-line=33 filename="src/cpp_parameters_node.cpp"}
+```{.cpp include="ros2_ws/src/cpp_parameters/src/cpp_parameters_node.cpp" start-line=8 end-line=37 filename="src/cpp_parameters_node.cpp"}
 ```
 
 ### Python
 
-```{.python include="ros2_ws/src/python_parameters/python_parameters/python_parameters_node.py" start-line=7 end-line=28 filename="python_parameters/python_parameters_node.py"}
+```{.python include="ros2_ws/src/python_parameters/python_parameters/python_parameters_node.py" start-line=7 end-line=23 filename="python_parameters/python_parameters_node.py"}
 ```
 
 :::
 
 - `declare_parameter(nombre, defecto, descriptor)`: por defecto un nodo solo acepta los parámetros **declarados**.
-- `get_parameter(nombre)` lee el valor. El ejemplo vuelve a poner `world` en cada ciclo.
+- `get_parameter(nombre)` lee el valor.
+- `add_post_set_parameters_callback` llama a `on_param_change` **cada vez que cambia** un parámetro. En C++ hay que guardar el *handle*.
 
 ::: {.notes}
-El ejemplo oficial llama a `set_parameters` en cada ciclo para devolver el valor a `world`, así que un `ros2 param set` solo se ve una vez. En C++ el valor se lee con `as_string()`; en Python con `.get_parameter_value().string_value`.
+A diferencia del tutorial oficial, no hay timer: el nodo saluda al arrancar y después solo cuando llega un cambio, y el valor nuevo se mantiene. El callback recibe la lista de parámetros modificados y filtra por nombre. En C++, si se pierde el *handle*, el callback se desregistra; en Python se quita con `remove_post_set_parameters_callback`. En C++ el valor se lee con `as_string()`; en Python con `.get_parameter_value().string_value` o, dentro del callback, `param.value`.
 :::
 
 ## Prueba
@@ -90,7 +91,7 @@ ros2 launch python_parameters python_parameters_launch.py
 ::::
 
 ::: {.callout-tip}
-Para reaccionar a los cambios, un nodo puede registrar *callbacks* de parámetros: antes de aplicar el cambio, para validarlo o rechazarlo, y después de aplicarlo. Ver [Parameters](https://docs.ros.org/en/lyrical/ROS-Framework/About-Parameters.html) y [Monitoring for parameter changes](https://docs.ros.org/en/lyrical/ROS-Framework/parameters/Working-with-parameters/Monitoring-For-Parameter-Changes-CPP.html).
+Además del *callback* posterior al cambio (el de los ejemplos), hay uno previo para validar o rechazar el cambio (`add_on_set_parameters_callback`), y `ParameterEventHandler` permite vigilar parámetros de otros nodos. Ver [Parameters](https://docs.ros.org/en/lyrical/ROS-Framework/About-Parameters.html) y [Monitoring for parameter changes](https://docs.ros.org/en/lyrical/ROS-Framework/parameters/Working-with-parameters/Monitoring-For-Parameter-Changes-CPP.html).
 :::
 
 ::: {.ref}

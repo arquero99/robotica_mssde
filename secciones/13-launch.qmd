@@ -48,29 +48,46 @@ ros2 launch turtlesim multisim.launch.py    # ejemplo: dos turtlesim a la vez
 [Creating a launch file](https://docs.ros.org/en/lyrical/Developer-Tools/Launch/Creating-Launch-Files.html)
 :::
 
-## Argumentos y nodos C++ + Python
+## Argumentos, parámetros y nodos C++ + Python {.launch-params}
 
 `cpp_launch_example/launch/pubsub_mixto_launch.py`:
 
 :::: {.columns}
 
-::: {.column width="55%"}
+::: {.column width="62%"}
 ```{.python include="ros2_ws/src/cpp_launch_example/launch/pubsub_mixto_launch.py"}
 ```
 :::
 
-::: {.column width="45%"}
+::: {.column width="38%"}
 - `DeclareLaunchArgument`: argumento con valor por defecto y descripción.
 - `LaunchConfiguration('topic')`: su valor, que se resuelve **al lanzar** (*sustitución*).
-- Se cambia con `topic:=saludos`; `--show-args` los lista.
+- Se cambian con `topic:=saludos saludo:=moon`; `--show-args` los lista.
 - Nodos **C++ y Python** en el mismo fichero.
-- Parámetros: `parameters=[{'clave': valor}]` o un fichero YAML.
+- `parameters=[{'clave': valor}]`: valor **fijo** (`param_py`) o tomado de un **argumento** (`param_cpp`). También admite rutas a ficheros YAML.
 :::
 
 ::::
 
 ::: {.ref}
 [Using substitutions](https://docs.ros.org/en/lyrical/Developer-Tools/Launch/Using-Substitutions.html)
+:::
+
+## Por qué fijar los parámetros en el launch
+
+- **Configuración separada del código**: los valores se cambian sin recompilar ni tocar el nodo. El mismo ejecutable sirve para varios usos.
+- **Un único sitio describe el sistema**: qué nodos se arrancan y con qué valores. El fichero se versiona con git y se revisa como el resto del código, y cualquiera reproduce exactamente la misma configuración.
+- **Valores correctos desde el arranque**: el nodo los recibe al declarar el parámetro. No hay un intervalo con los valores por defecto ni hace falta un `ros2 param set` posterior.
+- **Coherencia entre nodos**: un mismo argumento alimenta a varios nodos (como `topic` aquí), así que no pueden quedar desincronizados.
+- **Variantes sin duplicar**: un argumento (`saludo:=moon`) o un YAML distinto por robot o entorno (simulación frente a robot real) con los mismos launch files.
+- **Escala**: con decenas de nodos, pasar `-p` a cada `ros2 run` en su terminal no es manejable.
+
+::: {.callout-tip}
+Para muchos parámetros, mejor un **fichero YAML** instalado en el paquete: `parameters=[ruta_al_yaml]`. Es el mismo formato que genera `ros2 param dump` (bloque 12).
+:::
+
+::: {.ref}
+[Using ROS 2 launch for large projects](https://docs.ros.org/en/lyrical/Developer-Tools/Launch/Using-ROS2-Launch-For-Large-Projects.html)
 :::
 
 ## Instalar launch files en un paquete
@@ -147,17 +164,14 @@ ros2 run rqt_graph rqt_graph
 **Talker C++ + listener Python**
 ```{.bash}
 ros2 launch cpp_launch_example pubsub_mixto_launch.py --show-args
-ros2 launch cpp_launch_example pubsub_mixto_launch.py topic:=saludos
+ros2 launch cpp_launch_example pubsub_mixto_launch.py \
+  topic:=saludos saludo:=moon
+#   [param_cpp]: Hello moon!   [param_py]: Hello mars!
 
 # En otra terminal
-ros2 node list          # /talker_cpp  /listener_py
-ros2 topic list         # /saludos
+ros2 node list          # /talker_cpp /listener_py /param_cpp /param_py
 ros2 topic echo /saludos
-```
-
-**Parámetros desde launch** (bloque 12)
-```{.bash}
-ros2 launch cpp_parameters cpp_parameters_launch.py
+ros2 param get /param_cpp my_parameter   # String value is: moon
 ```
 :::
 

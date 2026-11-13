@@ -11,21 +11,16 @@ class MinimalParam(Node):
         my_parameter_descriptor = ParameterDescriptor(description='This parameter is mine!')
 
         self.declare_parameter('my_parameter', 'world', my_parameter_descriptor)
-
-        self.timer = self.create_timer(1, self.timer_callback)
-
-    def timer_callback(self):
         my_param = self.get_parameter('my_parameter').get_parameter_value().string_value
-
         self.get_logger().info('Hello %s!' % my_param)
 
-        my_new_param = rclpy.parameter.Parameter(
-            'my_parameter',
-            rclpy.Parameter.Type.STRING,
-            'world'
-        )
-        all_new_parameters = [my_new_param]
-        self.set_parameters(all_new_parameters)
+        # Se llama cada vez que cambian parámetros del nodo (ros2 param set, load...)
+        self.add_post_set_parameters_callback(self.on_param_change)
+
+    def on_param_change(self, parameters):
+        for param in parameters:
+            if param.name == 'my_parameter':
+                self.get_logger().info('Hello %s!' % param.value)
 
 
 def main():
