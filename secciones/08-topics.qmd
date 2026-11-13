@@ -1,12 +1,10 @@
 # 8 · Topics {.bloque}
 
-[20 min]{.tiempo}
-
 ## CLI: explorar topics con turtlesim
 
 ```{.bash}
 ros2 run turtlesim turtlesim_node      # terminal 1
-ros2 run turtlesim turtle_teleop_key   # terminal 2: mueve la tortuga con las flechas
+ros2 run turtlesim turtle_teleop_key   # terminal 2: la tortuga se mueve con las flechas
 
 # Observar
 ros2 topic list -t                          # topics y su tipo
@@ -23,8 +21,12 @@ ros2 topic pub --rate 1 /turtle1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 2
 
 El mensaje se escribe en **YAML**; los campos omitidos valen 0. Plantilla: `ros2 interface proto <tipo>`.
 
+::: {.callout-note}
+**QoS** (*Quality of Service*): políticas que ajustan la entrega de mensajes (historial y profundidad, fiabilidad, durabilidad...). Por defecto: *keep last* 10, *reliable* y *volatile*; el perfil `sensor_data` usa *best effort*. Publicador y suscriptor solo se conectan si sus QoS son **compatibles**: por ejemplo, un publicador *best effort* no llega a un suscriptor *reliable*. En `ros2 topic pub/echo` se ajustan con `--qos-profile`, `--qos-reliability`, `--qos-durability`...
+:::
+
 ::: {.ref}
-[Learning about topics](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/topics/Understanding-ROS2-Topics/Understanding-ROS2-Topics.html)
+[Learning about topics](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/topics/Understanding-ROS2-Topics/Understanding-ROS2-Topics.html) · [Quality of Service settings](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/topics/About-Quality-of-Service-Settings.html)
 :::
 
 ## Publicador
@@ -33,7 +35,7 @@ El mensaje se escribe en **YAML**; los campos omitidos valen 0. Plantilla: `ros2
 
 ### C++
 
-```{.cpp include="ros2_ws/src/cpp_pubsub/src/publisher_lambda_function.cpp" start-line=14 end-line=35 filename="src/publisher_lambda_function.cpp"}
+```{.cpp include="ros2_ws/src/cpp_pubsub/src/publisher_member_function.cpp" start-line=28 end-line=50 filename="src/publisher_member_function.cpp"}
 ```
 
 ### Python
@@ -44,7 +46,11 @@ El mensaje se escribe en **YAML**; los campos omitidos valen 0. Plantilla: `ros2
 :::
 
 - `create_publisher(tipo, "topic", 10)`: el `10` es la profundidad de la cola (QoS).
-- Cada 500 ms el **timer** rellena un mensaje y llama a `publish()`.
+- Cada 500 ms el **timer** llama a `timer_callback()`, que rellena un mensaje y llama a `publish()`.
+
+::: {.avanzado}
+El mismo publicador con el callback como [función lambda](https://github.com/ros2/examples/blob/lyrical/rclcpp/topics/minimal_publisher/lambda.cpp) (en el repositorio: `src/publisher_lambda_function.cpp`, ejecutable `talker_lambda`).
+:::
 
 ## Suscriptor
 
@@ -52,7 +58,7 @@ El mensaje se escribe en **YAML**; los campos omitidos valen 0. Plantilla: `ros2
 
 ### C++
 
-```{.cpp include="ros2_ws/src/cpp_pubsub/src/subscriber_lambda_function.cpp" start-line=6 end-line=22 filename="src/subscriber_lambda_function.cpp"}
+```{.cpp include="ros2_ws/src/cpp_pubsub/src/subscriber_member_function.cpp" start-line=23 end-line=39 filename="src/subscriber_member_function.cpp"}
 ```
 
 ### Python
@@ -62,8 +68,12 @@ El mensaje se escribe en **YAML**; los campos omitidos valen 0. Plantilla: `ros2
 
 :::
 
-- El callback se ejecuta **cada vez que llega un mensaje** (mientras el nodo está en `spin`).
+- `topic_callback()` se ejecuta **con cada mensaje** recibido (`_1`).
 - Mismo topic, mismo tipo y QoS compatible: se conectan **solos**, sea C++ o Python.
+
+::: {.avanzado}
+El mismo suscriptor con el callback como [función lambda](https://github.com/ros2/examples/blob/lyrical/rclcpp/topics/minimal_subscriber/lambda.cpp) (en el repositorio: `src/subscriber_lambda_function.cpp`, ejecutable `listener_lambda`).
+:::
 
 ## Configuración del paquete
 
@@ -86,10 +96,10 @@ ros2 pkg create --build-type ament_cmake --license Apache-2.0 cpp_pubsub
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
-add_executable(talker src/publisher_lambda_function.cpp)
+add_executable(talker src/publisher_member_function.cpp)
 target_link_libraries(talker PUBLIC rclcpp::rclcpp std_msgs::std_msgs)
 
-add_executable(listener src/subscriber_lambda_function.cpp)
+add_executable(listener src/subscriber_member_function.cpp)
 target_link_libraries(listener PUBLIC rclcpp::rclcpp std_msgs::std_msgs)
 
 install(TARGETS talker listener DESTINATION lib/${PROJECT_NAME})
@@ -123,7 +133,7 @@ entry_points={
 [Writing a simple publisher and subscriber (C++)](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html) · [(Python)](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Writing-A-Simple-Py-Publisher-And-Subscriber.html)
 :::
 
-## Pruébalo: mezclar C++ y Python
+## Prueba: C++ y Python juntos
 
 ```{.bash}
 cd ~/ros2_ws
@@ -159,6 +169,12 @@ ros2 topic info /topic --verbose
 
 ::: {.callout-note}
 **QoS** (*Quality of Service*): fiabilidad, durabilidad, profundidad... Que dos nodos se descubran no garantiza que intercambien datos: si las QoS son **incompatibles**, ese par no se conecta. `ros2 topic info --verbose` muestra la QoS de cada extremo.
+
+**Por qué**: modelo *request vs offered*. El suscriptor **pide** una calidad mínima y el publicador **ofrece** una máxima; solo se conectan si lo pedido no supera lo ofrecido en ninguna política. Ejemplos:
+
+- **Fiabilidad**: publicador *best effort* + suscriptor *reliable* → sin conexión (al revés, sí).
+- **Durabilidad**: publicador *volatile* + suscriptor *transient local* → sin conexión.
+- **Prueba**: con el `listener` (*reliable*) en marcha, `ros2 topic pub --qos-reliability best_effort /topic std_msgs/msg/String "{data: 'hola'}"` no llega.
 :::
 
 ::: {.notes}

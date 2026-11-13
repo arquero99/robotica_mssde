@@ -1,7 +1,5 @@
 # 6 · Primer nodo {.bloque}
 
-[15 min]{.tiempo}
-
 ## Anatomía de un nodo
 
 ```{mermaid}
@@ -25,24 +23,24 @@ flowchart LR
 [Nodes](https://docs.ros.org/en/lyrical/ROS-Framework/About-Nodes.html) · [Logging](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/About-Logging/About-Logging.html)
 :::
 
-## Un nodo con timer y log
+## Un nodo con timer y log {.codigo-largo}
 
 ::: {.panel-tabset}
 
 ### C++
 
-```{.cpp include="ros2_ws/src/my_package_cpp/src/my_node.cpp" filename="src/my_node.cpp"}
+```{.cpp include="ros2_ws/src/my_package_cpp/src/my_node.cpp" start-line=9 filename="src/my_node.cpp"}
 ```
 
 ### Python
 
-```{.python include="ros2_ws/src/my_package_py/my_package_py/my_node.py" filename="my_package_py/my_node.py"}
+```{.python include="ros2_ws/src/my_package_py/my_package_py/my_node.py" start-line=6 filename="my_package_py/my_node.py"}
 ```
 
 :::
 
 ::: {.notes}
-Este código sustituye al "hola mundo" generado por `--node-name`. Resaltar: en Lyrical, Python usa `with rclpy.init()` (gestor de contexto) y captura `ExternalShutdownException`. Si veis tutoriales antiguos con `rclpy.shutdown()` explícito, es el estilo de distribuciones anteriores.
+Este código sustituye al "hola mundo" generado por `--node-name`. Resaltar: en Lyrical, Python usa `with rclpy.init()` (gestor de contexto) y captura `ExternalShutdownException`. Los tutoriales antiguos usan `rclpy.shutdown()` explícito: es el estilo de distribuciones anteriores.
 :::
 
 ## Registrar el ejecutable
@@ -68,7 +66,7 @@ En `package.xml`: `<exec_depend>rclpy</exec_depend>`
 - C++: `add_executable` compila, `target_link_libraries` enlaza con `rclcpp` y `install` copia el binario a `install/<pkg>/lib/<pkg>/`. Ahí lo busca `ros2 run`.
 - Python: cada entrada de `console_scripts` crea un ejecutable `nombre = paquete.módulo:función`.
 
-## Pruébalo + CLI de nodos
+## Ejecución e inspección de nodos
 
 ```{.bash}
 cd ~/ros2_ws

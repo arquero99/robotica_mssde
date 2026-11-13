@@ -1,7 +1,5 @@
 # 5 · Workspace y paquetes {.bloque}
 
-[18 min]{.tiempo}
-
 ## Workspace: underlay y overlay
 
 :::: {.columns}
@@ -11,7 +9,7 @@ Un **workspace** es un directorio con paquetes ROS que se compilan juntos.
 
 ```{.default}
 ros2_ws/
-├── src/       # tus paquetes (código fuente)
+├── src/       # paquetes propios (código fuente)
 ├── build/     # ficheros intermedios  (colcon)
 ├── install/   # lo que se ejecuta     (colcon)
 └── log/       # registros             (colcon)
@@ -20,7 +18,7 @@ ros2_ws/
 
 ::: {.column width="50%"}
 - **Underlay**: entorno sobre el que construyes. Aquí es `/opt/ros/lyrical`.
-- **Overlay**: tu workspace, "encima" del underlay. Sus paquetes **sustituyen** a los del underlay con el mismo nombre.
+- **Overlay**: el workspace propio, "encima" del underlay. Sus paquetes **sustituyen** a los del underlay con el mismo nombre.
 
 | Fichero | Carga |
 |---|---|
@@ -30,25 +28,16 @@ ros2_ws/
 
 ::::
 
-::: {.callout-important}
-Compila en una terminal y **carga el overlay en otra nueva**. Mezclar ambas cosas en la misma terminal puede dar problemas difíciles de diagnosticar.
-:::
-
 ::: {.ref}
 [Creating a workspace](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html)
 :::
 
-## Compilar con `colcon` y resolver dependencias con `rosdep`
+## Compilar con `colcon`
 
 ```{.bash}
-mkdir -p ~/ros2_ws/src && cd ~/ros2_ws        # crear el workspace
-
-# Dependencias declaradas en los package.xml (rosdep viene con ros-dev-tools)
-sudo rosdep init && rosdep update             # solo la primera vez
-rosdep install -i --from-path src --rosdistro lyrical -y
-
-colcon build                                  # compilar todo, siempre desde la raíz del workspace
-source install/setup.bash                     # (en otra terminal) usar lo compilado
+mkdir -p ~/ros2_ws/src && cd ~/ros2_ws    # crear el workspace
+colcon build                              # compilar todo, siempre desde la raíz del workspace
+source install/setup.bash                 # usar lo compilado
 ```
 
 | Opción de `colcon build` | Para qué |
@@ -58,10 +47,14 @@ source install/setup.bash                     # (en otra terminal) usar lo compi
 | `--symlink-install` | enlazar en lugar de copiar: los cambios en Python, launch o YAML no requieren recompilar |
 | `--event-handlers console_direct+` | ver la salida del compilador en la terminal |
 
-Para excluir un paquete de la compilación, crea un fichero vacío `COLCON_IGNORE` en su carpeta. Para ejecutar los tests: `colcon test`.
+Para excluir un paquete de la compilación basta con crear un fichero vacío `COLCON_IGNORE` en su carpeta. Para ejecutar los tests: `colcon test`.
 
 ::: {.ref}
-[Using colcon to build packages](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Colcon-Tutorial.html) · [rosdep](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Rosdep.html)
+[Using colcon to build packages](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Colcon-Tutorial.html)
+:::
+
+::: aside
+**Dependencias**: antes de compilar, `rosdep` instala las dependencias declaradas en los `package.xml` (viene con `ros-dev-tools`). La primera vez: `sudo rosdep init && rosdep update`; después, `rosdep install -i --from-path src --rosdistro lyrical -y` desde la raíz del workspace. Ver [rosdep](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Rosdep.html).
 :::
 
 ## Paquete: la unidad de organización
@@ -141,7 +134,7 @@ ros2 pkg create --build-type ament_python --license Apache-2.0 --node-name my_no
 - `<depend>`: necesario para compilar y para ejecutar. `<exec_depend>`: solo para ejecutar (lo habitual en Python).
 - `rosdep` lee estas etiquetas para instalar lo que falte.
 
-## Pruébalo: compilar y ejecutar
+## Compilación y ejecución
 
 ```{.bash}
 cd ~/ros2_ws
@@ -167,5 +160,5 @@ ros2 pkg xml my_package_cpp       # su package.xml
 ```
 
 ::: {.notes}
-El "hola mundo" que genera `--node-name` todavía no es un nodo ROS: no llama a rclcpp/rclpy. En el siguiente bloque lo sustituimos por un nodo de verdad.
+El "hola mundo" que genera `--node-name` todavía no es un nodo ROS: no llama a rclcpp/rclpy. En el bloque siguiente se sustituye por un nodo real.
 :::

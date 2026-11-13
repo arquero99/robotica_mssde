@@ -1,7 +1,5 @@
 # Cierre {.bloque}
 
-[2 min]{.tiempo}
-
 ## Resumen
 
 | Concepto | CLI | C++ (`rclcpp`) | Python (`rclpy`) |
@@ -23,4 +21,4 @@
 - **Composición** y **nodos gestionados** (*lifecycle*) ([Composition](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/About-Composition.html) · [Managed nodes](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/Working-with-nodes/Managed-Nodes.html)).
 - **Executors** y *callback groups* ([Executors](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/About-Executors/About-Executors.html)).
 
-**Recursos**: documentación de Lyrical <https://docs.ros.org/en/lyrical/> · paquetes en [ROS Index](https://index.ros.org/) · código de esta sesión en `ros2_ws/src/` · ejercicio en `ejercicios/ejercicio-actions-python.md`.
+**Recursos**: documentación de Lyrical <https://docs.ros.org/en/lyrical/> · paquetes en [ROS Index](https://index.ros.org/) · código de la presentación en `ros2_ws/src/`.

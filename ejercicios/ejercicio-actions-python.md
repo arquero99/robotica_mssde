@@ -1,14 +1,13 @@
 # Ejercicio: servidor y cliente de la action Fibonacci en Python
 
-En clase hemos visto el servidor y el cliente de la action `Fibonacci` en **C++** (`custom_action_cpp`). En este ejercicio vas a escribir los mismos nodos en **Python**, con `rclpy.action`, y a comprobar que son intercambiables con los de C++.
+El bloque 11 muestra el servidor y el cliente de la action `Fibonacci` en **C++** (`custom_action_cpp`). El objetivo del ejercicio es escribir los mismos nodos en **Python**, con `rclpy.action`, y comprobar que son intercambiables con los de C++.
 
-- **Tiempo estimado**: 30–45 minutos.
 - **Referencia oficial**: [Writing an action server and client (Python)](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/actions/Working-with-actions/Writing-an-Action-Server-Client/Py.html)
-- **Solución**: `ros2_ws/src/custom_action_py/`. Consúltala solo al terminar.
+- **Solución**: `ros2_ws/src/custom_action_py/`, para consultar al terminar.
 
 ## Requisitos previos
 
-- El paquete `custom_action_interfaces` compilado (bloque 11). Compruébalo con:
+- El paquete `custom_action_interfaces` compilado (bloque 11). Se comprueba con:
 
   ```bash
   ros2 interface show custom_action_interfaces/action/Fibonacci
@@ -35,14 +34,14 @@ ros2 pkg create --build-type ament_python --license Apache-2.0 custom_action_py 
   --dependencies rclpy custom_action_interfaces
 ```
 
-Crearás dos ficheros dentro de `custom_action_py/custom_action_py/`:
+Se crean dos ficheros dentro de `custom_action_py/custom_action_py/`:
 
 - `fibonacci_action_server.py`
 - `fibonacci_action_client.py`
 
 ## Paso 2: el servidor
 
-Completa los `TODO` del siguiente esqueleto:
+Hay que completar los `TODO` del siguiente esqueleto:
 
 ```python
 import time
@@ -104,7 +103,7 @@ entry_points={
 },
 ```
 
-Comprueba también que `package.xml` incluye `rclpy` y `custom_action_interfaces` como dependencias.
+Además, `package.xml` debe incluir `rclpy` y `custom_action_interfaces` como dependencias.
 
 ## Paso 4: probar el servidor desde la CLI
 
@@ -126,7 +125,7 @@ Resultado esperado: la secuencia `[0, 1, 1, 2, 3, 5]`, el feedback de cada paso 
 
 ## Paso 5: el cliente
 
-Completa los `TODO`:
+Hay que completar los `TODO`:
 
 ```python
 import rclpy
@@ -192,16 +191,16 @@ Las tres combinaciones deben terminar con la secuencia de orden 10: `[0, 1, 1, 2
 
 ## Criterios de comprobación
 
-- [ ] `ros2 action list -t` muestra `/fibonacci [custom_action_interfaces/action/Fibonacci]` con tu servidor en marcha.
+- [ ] `ros2 action list -t` muestra `/fibonacci [custom_action_interfaces/action/Fibonacci]` con el servidor Python en marcha.
 - [ ] `ros2 action send_goal --feedback ...` muestra el feedback paso a paso y termina en `SUCCEEDED`.
-- [ ] Tu cliente muestra el feedback y el resultado, y después termina.
+- [ ] El cliente Python muestra el feedback y el resultado, y después termina.
 - [ ] Las tres combinaciones de la tabla funcionan.
 
 ## Ampliación (opcional): cancelación
 
 El servidor C++ comprueba `is_canceling()` y termina con `canceled()`. Para hacer lo mismo en Python:
 
-1. Pasa un `cancel_callback` al `ActionServer` que devuelva `CancelResponse.ACCEPT` (`from rclpy.action import CancelResponse`).
-2. En el bucle de `execute_callback`, comprueba `goal_handle.is_cancel_requested`. Si es cierto, llama a `goal_handle.canceled()` y devuelve el resultado parcial.
-3. Pista: mientras `execute_callback` está en `time.sleep()`, un executor de un solo hilo no puede atender la petición de cancelación. Investiga `MultiThreadedExecutor` y la guía [Using callback groups](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/Working-with-nodes/Using-callback-groups.html).
-4. Pruébalo enviando un goal largo (`order: 20`) y pulsando `Ctrl+C` en el `ros2 action send_goal`. La CLI pide la cancelación del goal.
+1. Pasar un `cancel_callback` al `ActionServer` que devuelva `CancelResponse.ACCEPT` (`from rclpy.action import CancelResponse`).
+2. En el bucle de `execute_callback`, comprobar `goal_handle.is_cancel_requested`. Si es cierto, llamar a `goal_handle.canceled()` y devolver el resultado parcial.
+3. Pista: mientras `execute_callback` está en `time.sleep()`, un executor de un solo hilo no puede atender la petición de cancelación. Conviene revisar `MultiThreadedExecutor` y la guía [Using callback groups](https://docs.ros.org/en/lyrical/ROS-Framework/nodes/Working-with-nodes/Using-callback-groups.html).
+4. Para probarlo, enviar un goal largo (`order: 20`) y pulsar `Ctrl+C` en el `ros2 action send_goal`. La CLI pide la cancelación del goal.

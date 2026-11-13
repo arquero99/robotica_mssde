@@ -1,7 +1,5 @@
 # 7 · Interfaces {.bloque}
 
-[10 min]{.tiempo}
-
 ## Tres formas de comunicarse
 
 :::: {.columns}
@@ -132,5 +130,5 @@ Vector3  angular
 **Paquetes de interfaces habituales**: `std_msgs`, `geometry_msgs`, `sensor_msgs`, `nav_msgs`, `example_interfaces`, `std_srvs`.
 
 ::: {.callout-tip}
-Antes de definir un tipo propio, busca uno estándar que te sirva. Los tipos estándar facilitan reutilizar herramientas y paquetes de otros.
+Antes de definir un tipo propio, conviene buscar uno estándar que sirva. Los tipos estándar facilitan reutilizar herramientas y paquetes de otros.
 :::

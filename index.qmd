@@ -1,5 +1,5 @@
 ---
-title: "ROS 2 Lyrical Luth"
+title: "ROS 2"
 subtitle: "Arquitectura, paquetes, nodos, interfaces, parámetros y launch — en C++ y Python"
 author: "Máster en Sistemas Empotrados y Distribuidos · ETSISI UPM"
 format:
@@ -7,52 +7,52 @@ format:
     toc: false
 ---
 
-## Agenda (≈ 3 h)
+## Agenda
 
 :::: {.columns .agenda}
 
 ::: {.column width="48%"}
-| # | Bloque | Min |
-|---|---|---|
-| 1 | Qué es ROS 2 y qué puede hacer | 8 |
-| 2 | Arquitectura | 13 |
-| 3 | Elegir la versión según Ubuntu | 5 |
-| 4 | Instalación (referencia) | 2 |
-| 5 | Workspace y paquetes | 18 |
-| 6 | Primer nodo | 15 |
-| 7 | Interfaces: concepto y CLI | 10 |
-| — | *Descanso* | 10 |
+| # | Bloque |
+|---|---|
+| 1 | Qué es ROS 2 y qué puede hacer |
+| 2 | Arquitectura |
+| 3 | Elegir la versión según Ubuntu |
+| 4 | Instalación (referencia) |
+| 5 | Workspace y paquetes |
+| 6 | Primer nodo |
+| 7 | Interfaces: concepto y CLI |
+| — | *Descanso* |
 :::
 
 ::: {.column width="4%"}
 :::
 
 ::: {.column width="48%"}
-| # | Bloque | Min |
-|---|---|---|
-| 8 | Topics: publicador y suscriptor | 20 |
-| 9 | Servicios: servidor y llamadas | 20 |
-| 10 | Tipos propios: msg y srv | 15 |
-| 11 | Actions: demo C++ + ejercicio Python | 20 |
-| 12 | Parámetros | 10 |
-| 13 | Launch files (Python) | 12 |
-| — | Cierre | 2 |
+| # | Bloque |
+|---|---|
+| 8 | Topics: publicador y suscriptor |
+| 9 | Servicios: servidor y llamadas |
+| 10 | Tipos propios: msg y srv |
+| 11 | Actions |
+| 12 | Parámetros |
+| 13 | Launch files (Python) |
+| — | Cierre |
 :::
 
 ::::
 
-## Cómo seguir la sesión
+## Estructura de la presentación
 
-- Plataforma de referencia: **Ubuntu 26.04 + ROS 2 Lyrical Luth** (instalada antes de la sesión).
+- Plataforma de referencia: **Ubuntu 26.04 + ROS 2 Lyrical Luth** (instalada previamente).
 - Cada bloque práctico tiene tres partes:
   - **CLI**: comandos `ros2 …` para explorar el sistema.
   - **Código**: pestañas **C++** (`rclcpp`) y **Python** (`rclpy`).
-  - **Pruébalo**: los pasos exactos para compilar y ejecutar.
+  - **Prueba**: pasos para compilar y ejecutar.
 - El código completo está en el repositorio, en `ros2_ws/src/`.
 - Todo sigue los tutoriales oficiales: <https://docs.ros.org/en/lyrical/>
 
 ::: {.callout-tip}
-Abre **varias terminales** y en cada una carga el entorno: `source /opt/ros/lyrical/setup.bash`
+Se recomienda trabajar con **varias terminales** y cargar el entorno en cada una: `source /opt/ros/lyrical/setup.bash`
 :::
 
 {{< include secciones/01-que-es-ros2.qmd >}}
@@ -70,8 +70,6 @@ Abre **varias terminales** y en cada una carga el entorno: `source /opt/ros/lyri
 {{< include secciones/07-interfaces.qmd >}}
 
 # Descanso {.bloque}
-
-10 minutos
 
 {{< include secciones/08-topics.qmd >}}
 

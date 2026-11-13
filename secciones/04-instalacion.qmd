@@ -1,6 +1,6 @@
 # 4 · Instalación {.bloque}
 
-[2 min · referencia: hazlo **antes** de la sesión]{.tiempo}
+Diapositiva de referencia: la instalación se realiza **antes** de empezar.
 
 ## Instalar Lyrical en Ubuntu 26.04 {.instalacion}
 

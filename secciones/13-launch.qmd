@@ -1,6 +1,6 @@
 # 13 · Launch files {.bloque}
 
-[12 min · formato Python]{.tiempo}
+Formato Python.
 
 ## Para qué sirve *launch*
 
@@ -14,7 +14,7 @@ ros2 launch ruta/al/fichero_launch.py       # directamente desde un fichero
 ros2 launch turtlesim multisim.launch.py    # ejemplo: dos turtlesim a la vez
 ```
 
-- Formatos: **Python**, XML y YAML. Hoy usamos Python, el más flexible.
+- Formatos: **Python**, XML y YAML. Aquí se usa Python, el más flexible.
 - Por convención los launch files van en la carpeta `launch/` del paquete y su nombre **termina en `launch.py`**. Así `ros2 launch` los reconoce y autocompleta.
 - Para ver los argumentos de un launch file: `ros2 launch <paquete> <fichero> --show-args`.
 
@@ -117,7 +117,7 @@ En ambos casos, en `package.xml`:
 [Integrating launch files into ROS 2 packages](https://docs.ros.org/en/lyrical/Developer-Tools/Launch/Launch-system.html)
 :::
 
-## Pruébalo
+## Prueba
 
 ```{.bash}
 cd ~/ros2_ws

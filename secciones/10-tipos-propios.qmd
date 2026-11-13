@@ -1,7 +1,5 @@
 # 10 · Tipos propios: msg y srv {.bloque}
 
-[15 min]{.tiempo}
-
 ## Paquete de interfaces
 
 Las interfaces se definen en un paquete **`ament_cmake`**. Desde él, `rosidl` genera el código C++ **y** Python.
@@ -72,7 +70,7 @@ Solo cambian las líneas marcadas con `// CHANGE` y `# CHANGE`. La estructura de
 
 ### C++
 
-```{.cpp include="ros2_ws/src/cpp_pubsub/src/publisher_num.cpp" start-line=1 end-line=30 filename="src/publisher_num.cpp"}
+```{.cpp include="ros2_ws/src/cpp_pubsub/src/publisher_num.cpp" start-line=1 end-line=32 filename="src/publisher_num.cpp"}
 ```
 
 ### Python
@@ -82,7 +80,7 @@ Solo cambian las líneas marcadas con `// CHANGE` y `# CHANGE`. La estructura de
 
 :::
 
-El suscriptor (`subscriber_num.cpp` / `subscriber_num.py`) se adapta igual. Lo tienes en el repositorio.
+El suscriptor (`subscriber_num.cpp` / `subscriber_num.py`) se adapta igual y está en el repositorio.
 
 ## Usar el servicio `AddThreeInts`
 
@@ -140,7 +138,7 @@ target_link_libraries(talker_num PUBLIC rclcpp::rclcpp tutorial_interfaces::tuto
 También se puede definir una interfaz y usarla **en el mismo paquete** (ver [Implementing custom interfaces](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/Working-with-interfaces/Single-Package-Define-And-Use-Interface.html)). Lo habitual es un paquete `*_interfaces` separado: así otros paquetes pueden usar las interfaces sin depender de tu código.
 :::
 
-## Pruébalo
+## Prueba
 
 ```{.bash}
 cd ~/ros2_ws

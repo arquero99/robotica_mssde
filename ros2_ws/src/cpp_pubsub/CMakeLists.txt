@@ -16,11 +16,19 @@ find_package(std_msgs REQUIRED)
 find_package(tutorial_interfaces REQUIRED)    # Bloque 10: tipos propios
 
 # Bloque 8: publicador y suscriptor con std_msgs/String
-add_executable(talker src/publisher_lambda_function.cpp)
+add_executable(talker src/publisher_member_function.cpp)
 target_link_libraries(talker PUBLIC rclcpp::rclcpp std_msgs::std_msgs)
 
-add_executable(listener src/subscriber_lambda_function.cpp)
+# Variante avanzada del publicador: callback como función lambda
+add_executable(talker_lambda src/publisher_lambda_function.cpp)
+target_link_libraries(talker_lambda PUBLIC rclcpp::rclcpp std_msgs::std_msgs)
+
+add_executable(listener src/subscriber_member_function.cpp)
 target_link_libraries(listener PUBLIC rclcpp::rclcpp std_msgs::std_msgs)
+
+# Variante avanzada del suscriptor: callback como función lambda
+add_executable(listener_lambda src/subscriber_lambda_function.cpp)
+target_link_libraries(listener_lambda PUBLIC rclcpp::rclcpp std_msgs::std_msgs)
 
 # Bloque 10: los mismos nodos con tutorial_interfaces/msg/Num
 add_executable(talker_num src/publisher_num.cpp)
@@ -31,7 +39,9 @@ target_link_libraries(listener_num PUBLIC rclcpp::rclcpp tutorial_interfaces::tu
 
 install(TARGETS
   talker
+  talker_lambda
   listener
+  listener_lambda
   talker_num
   listener_num
   DESTINATION lib/${PROJECT_NAME})

@@ -1,7 +1,5 @@
 # 2 · Arquitectura {.bloque}
 
-[13 min]{.tiempo}
-
 ## El grafo ROS
 
 Un sistema ROS es una **red de nodos** que procesan datos de forma concurrente y se comunican mediante interfaces bien definidas.
@@ -30,7 +28,7 @@ flowchart LR
 ```{mermaid}
 %%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
 flowchart TB
-  U["Tu código<br/>(nodos C++ / Python)"] --> CPP["rclcpp"]
+  U["Código de usuario<br/>(nodos C++ / Python)"] --> CPP["rclcpp"]
   U --> PY["rclpy"]
   CPP --> RCL["rcl (C)<br/>lógica común de ROS"]
   PY --> RCL
@@ -41,7 +39,7 @@ flowchart TB
 :::
 
 ::: {.column width="55%"}
-- **`rclcpp` / `rclpy`**: las API que usarás. Cada una es idiomática en su lenguaje.
+- **`rclcpp` / `rclpy`**: las API para programar nodos. Cada una es idiomática en su lenguaje.
 - **`rcl`**: núcleo común en C. Parámetros, nombres o tiempo funcionan igual en todos los lenguajes.
 - **`rmw`**: abstrae el transporte. El middleware se puede **cambiar en tiempo de ejecución**:
 
@@ -74,7 +72,7 @@ Dos variables de entorno controlan quién ve a quién:
 | `ROS_AUTOMATIC_DISCOVERY_RANGE` | Limitar el alcance del descubrimiento | `export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` |
 
 ::: {.callout-warning}
-**En el aula** usad `ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` o un `ROS_DOMAIN_ID` distinto por persona. Si no, veréis los nodos de los compañeros.
+En **redes compartidas** conviene usar `ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` o un `ROS_DOMAIN_ID` distinto para cada equipo. Si no, se verán los nodos de otros equipos de la red.
 :::
 
 ::: {.ref}
@@ -101,14 +99,14 @@ ros2 doctor           # diagnóstico del entorno
 
 ::: {.column width="50%"}
 ### API: `rclcpp` / `rclpy`
-**Programar** tus propios nodos con los mismos conceptos.
+**Programar** nodos propios con los mismos conceptos.
 
-- Lo que ves con la CLI lo creas con la API.
-- Primero exploramos con la CLI y después lo programamos.
+- Lo que se observa con la CLI se crea con la API.
+- Primero se explora con la CLI y después se programa.
 :::
 
 ::::
 
 ::: {.notes}
-Demo rápida: talker C++ + listener Python (si da tiempo) y `rqt_graph`. Remarcar que son dos lenguajes distintos hablando por el mismo topic.
+Demo rápida: talker C++ + listener Python (opcional) y `rqt_graph`. Remarcar que son dos lenguajes distintos hablando por el mismo topic.
 :::

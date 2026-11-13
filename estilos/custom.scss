@@ -56,6 +56,11 @@ $mermaid-font-family: Arial, "Liberation Sans", "Helvetica Neue", Helvetica, san
   max-height: 320px;
 }
 
+// Diapositivas con solo código (sin viñetas)
+.reveal section.codigo-largo .panel-tabset pre code {
+  max-height: 450px;
+}
+
 // Diapositiva de instalación: mostrar el bloque completo
 .reveal section.instalacion pre code {
   max-height: 560px;
@@ -95,17 +100,6 @@ $mermaid-font-family: Arial, "Liberation Sans", "Helvetica Neue", Helvetica, san
 .reveal .cell-output-display svg,
 .reveal .mermaid svg {
   max-height: 400px;
-}
-
-// Etiquetas de tiempo y de lenguaje
-.reveal .tiempo {
-  display: inline-block;
-  font-size: 0.55em;
-  color: #fff;
-  background: $ros-navy;
-  border-radius: 4px;
-  padding: 2px 8px;
-  vertical-align: middle;
 }
 
 // Tablas compactas
@@ -150,5 +144,32 @@ $mermaid-font-family: Arial, "Liberation Sans", "Helvetica Neue", Helvetica, san
 
 .reveal .resaltado {
   color: $ros-orange;
+  font-weight: 600;
+}
+
+// Logos de distribuciones en la tabla
+.reveal table img.logo-distro {
+  height: 58px;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.reveal table td {
+  vertical-align: middle;
+}
+
+// Enlace a un ejemplo avanzado (al pie de una diapositiva)
+.reveal .avanzado {
+  font-size: 0.55em;
+  color: $ros-grey;
+  margin-top: 0.6em;
+}
+
+.reveal .avanzado p {
+  margin: 0;
+}
+
+.reveal .avanzado p:first-child::before {
+  content: "Ejemplo avanzado: ";
   font-weight: 600;
 }

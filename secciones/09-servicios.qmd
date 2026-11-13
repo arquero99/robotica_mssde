@@ -1,7 +1,5 @@
 # 9 · Servicios {.bloque}
 
-[20 min]{.tiempo}
-
 ## CLI: explorar y llamar servicios con turtlesim
 
 :::: {.columns}
@@ -35,8 +33,6 @@ turtlesim_msgs.srv.Spawn_Response(name='turtle2')
 :::
 
 ::::
-
-**Introspección**: `ros2 service echo /add_two_ints` muestra las peticiones y respuestas que circulan, si los nodos tienen la introspección activada.
 
 ::: {.ref}
 [Learning about services](https://docs.ros.org/en/lyrical/ROS-Framework/interfaces/services/Working-with-services/Understanding-ROS2-Services/Understanding-ROS2-Services.html)
@@ -139,7 +135,7 @@ entry_points={
 [Writing a simple service and client (C++)](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Writing-A-Simple-Cpp-Service-And-Client.html) · [(Python)](https://docs.ros.org/en/lyrical/ROS-Framework/client-libraries/Working-with-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.html)
 :::
 
-## Pruébalo
+## Prueba
 
 ```{.bash}
 cd ~/ros2_ws

@@ -1,41 +1,28 @@
 # 3 · Elegir la versión {.bloque}
 
-[5 min]{.tiempo}
-
 ## Distribución ↔ versión de Ubuntu
 
-Una **distribución** es un conjunto versionado de paquetes ROS, como una versión de Ubuntu. Cada una se publica para **una versión concreta** de Ubuntu (Tier 1, con paquetes `.deb`).
+Una **distribución** es un conjunto versionado de paquetes ROS, como una versión de Ubuntu. Cada una se publica para **una versión concreta** de Ubuntu, con paquetes `.deb`.
 
-| Ubuntu | Distribución ROS 2 | Publicación | Tipo | Fin de soporte |
-|---|---|---|---|---|
-| **26.04 Resolute Raccoon** | **Lyrical Luth** | 22-may-2026 | LTS | may-2031 |
-| 24.04 Noble Numbat | Jazzy Jalisco | 23-may-2024 | LTS | may-2029 |
-| 24.04 Noble Numbat | Kilted Kaiju | 23-may-2025 | no LTS | [dic-2026]{.resaltado} |
-| 22.04 Jammy Jellyfish | Humble Hawksbill | 23-may-2022 | LTS | may-2027 |
-| (sigue a la última) | Rolling Ridley | continua | desarrollo | — |
+| Ubuntu | Logo | Distribución ROS 2 | Publicación | Tipo | Fin de soporte |
+|---|:-:|---|---|---|---|
+| **26.04 Resolute Raccoon** | ![Lyrical Luth](imagenes/distros/lyrical-small.png){.logo-distro} | **Lyrical Luth** | 22-may-2026 | LTS | may-2031 |
+| 24.04 Noble Numbat | ![Jazzy Jalisco](imagenes/distros/jazzy-small.png){.logo-distro} | Jazzy Jalisco | 23-may-2024 | LTS | may-2029 |
+| 24.04 Noble Numbat | ![Kilted Kaiju](imagenes/distros/kilted-small.png){.logo-distro} | Kilted Kaiju | 23-may-2025 | no LTS | [dic-2026]{.resaltado} |
+| 22.04 Jammy Jellyfish | ![Humble Hawksbill](imagenes/distros/humble-small.png){.logo-distro} | Humble Hawksbill | 23-may-2022 | LTS | may-2027 |
+| (sigue a la última) | ![Rolling Ridley](imagenes/distros/rolling-small.png){.logo-distro} | Rolling Ridley | continua | desarrollo | — |
 
-**Regla práctica**: elige la **LTS** que corresponde a tu Ubuntu. Las LTS salen en mayo de los años pares y tienen 5 años de soporte. Las no LTS duran ~1,5 años.
+**Regla práctica**: elegir la **LTS** que corresponde a la versión de Ubuntu. Las LTS salen en mayo de los años pares y tienen 5 años de soporte. Las no LTS duran ~1,5 años.
 
 ::: {.ref}
-[Distributions](https://docs.ros.org/en/lyrical/Releases.html) · [REP 2000](https://reps.openrobotics.org/rep-2000/)
+[Distributions](https://docs.ros.org/en/rolling/Releases.html)
 :::
 
-## Niveles de soporte de Lyrical
-
-| Plataforma | Nivel | Cómo se instala |
-|---|---|---|
-| Ubuntu 26.04 (amd64, arm64) | **Tier 1** | paquetes `.deb` o archivo binario |
-| Windows 11 (VS2022) | Tier 1 | archivo binario |
-| RHEL 10 | Tier 2 | paquetes RPM |
-| Ubuntu 24.04, Debian Trixie, macOS | Tier 3 | **compilar desde fuente** |
+## Lyrical: requisitos y compatibilidad
 
 - **Requisitos mínimos de Lyrical**: C++20, C17, Python 3.12–3.14.
-- Middleware por defecto: **Fast DDS**.
-- Nodos de distribuciones distintas **no tienen garantizado** comunicarse entre sí. Usa la misma en todo el sistema.
-
-::: {.callout-note}
-En esta sesión: **Ubuntu 26.04 + Lyrical**. Si usas Jazzy (24.04) o Humble (22.04), casi todo es igual; hay diferencias puntuales en las API.
-:::
+- **Middleware por defecto**: Fast DDS.
+- **Compatibilidad de las comunicaciones**: nodos de distribuciones distintas **no tienen garantizado** comunicarse entre sí. Se debe usar la misma distribución en todo el sistema.
 
 ::: {.ref}
 [Lyrical Luth Supported Platforms](https://docs.ros.org/en/lyrical/Releases/lyrical/supported-platforms.html)

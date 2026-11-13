@@ -1,7 +1,5 @@
 # 12 · Parámetros {.bloque}
 
-[10 min]{.tiempo}
-
 ## Parámetros: configurar sin recompilar
 
 - Valores de configuración **de cada nodo**. Viven mientras vive el nodo.
@@ -42,13 +40,13 @@ ros2 run turtlesim turtlesim_node --ros-args -p background_r:=255           # un
 :::
 
 - `declare_parameter(nombre, defecto, descriptor)`: por defecto un nodo solo acepta los parámetros **declarados**.
-- `get_parameter(nombre)` lee el valor. Ojo: el ejemplo vuelve a poner `world` en cada ciclo.
+- `get_parameter(nombre)` lee el valor. El ejemplo vuelve a poner `world` en cada ciclo.
 
 ::: {.notes}
 El ejemplo oficial llama a `set_parameters` en cada ciclo para devolver el valor a `world`, así que un `ros2 param set` solo se ve una vez. En C++ el valor se lee con `as_string()`; en Python con `.get_parameter_value().string_value`.
 :::
 
-## Pruébalo
+## Prueba
 
 ```{.bash}
 cd ~/ros2_ws
@@ -82,7 +80,7 @@ ros2 run python_parameters minimal_param_node \
 ```
 
 ```{.bash}
-# Con un launch file (lo vemos en el bloque 13)
+# Con un launch file (ver bloque 13)
 ros2 launch cpp_parameters cpp_parameters_launch.py
 ros2 launch python_parameters python_parameters_launch.py
 #   [INFO] [custom_minimal_param_node]: Hello earth!

@@ -1,7 +1,10 @@
+#include <functional>
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
-#include "tutorial_interfaces/msg/num.hpp"                                       // CHANGE
+#include "tutorial_interfaces/msg/num.hpp"                                         // CHANGE
+
+using std::placeholders::_1;
 
 class MinimalSubscriber : public rclcpp::Node
 {
@@ -9,15 +12,16 @@ public:
   MinimalSubscriber()
   : Node("minimal_subscriber_num")
   {
-    auto topic_callback = [this](const tutorial_interfaces::msg::Num & msg){     // CHANGE
-      RCLCPP_INFO_STREAM(this->get_logger(), "I heard: '" << msg.num << "'");    // CHANGE
-    };
-    subscription_ = this->create_subscription<tutorial_interfaces::msg::Num>(    // CHANGE
-      "topic_num", 10, topic_callback);
+    subscription_ = this->create_subscription<tutorial_interfaces::msg::Num>(      // CHANGE
+      "topic_num", 10, std::bind(&MinimalSubscriber::topic_callback, this, _1));
   }
 
 private:
-  rclcpp::Subscription<tutorial_interfaces::msg::Num>::SharedPtr subscription_;  // CHANGE
+  void topic_callback(const tutorial_interfaces::msg::Num & msg) const             // CHANGE
+  {
+    RCLCPP_INFO_STREAM(this->get_logger(), "I heard: '" << msg.num << "'");        // CHANGE
+  }
+  rclcpp::Subscription<tutorial_interfaces::msg::Num>::SharedPtr subscription_;    // CHANGE
 };
 
 int main(int argc, char * argv[])

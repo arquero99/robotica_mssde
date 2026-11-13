@@ -1,4 +1,5 @@
 #include <chrono>
+#include <functional>
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
@@ -11,14 +12,15 @@ public:
   MyNode()
   : Node("my_node_cpp"), count_(0)
   {
-    auto timer_callback =
-      [this]() -> void {
-        RCLCPP_INFO(this->get_logger(), "Hola desde C++: %zu", this->count_++);
-      };
-    timer_ = this->create_wall_timer(1s, timer_callback);
+    timer_ = this->create_wall_timer(
+      1s, std::bind(&MyNode::timer_callback, this));
   }
 
 private:
+  void timer_callback()
+  {
+    RCLCPP_INFO(this->get_logger(), "Hola desde C++: %zu", count_++);
+  }
   rclcpp::TimerBase::SharedPtr timer_;
   size_t count_;
 };

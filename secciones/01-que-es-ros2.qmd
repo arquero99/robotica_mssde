@@ -1,7 +1,5 @@
 # 1 · Qué es ROS 2 {.bloque}
 
-[8 min]{.tiempo}
-
 ## ROS: la «fontanería» del robot
 
 **ROS** (*Robot Operating System*) es un ecosistema de código abierto para construir, desplegar, ejecutar y mantener aplicaciones robóticas.
@@ -54,10 +52,10 @@ Paquetes listos para usar:
 ::::
 
 ::: {.notes}
-Hoy nos centramos en el *framework*: es la base de todo lo demás. Las herramientas las iremos usando sobre la marcha (CLI, rqt_graph, colcon, launch). Las capacidades son paquetes de la comunidad que se apoyan en lo que vamos a ver.
+La presentación se centra en el *framework*, base de todo lo demás. Las herramientas se usan sobre la marcha (CLI, rqt_graph, colcon, launch). Las capacidades son paquetes de la comunidad que se apoyan en lo que vamos a ver.
 :::
 
-## Qué vamos a aprender hoy
+## Contenidos
 
 ```{mermaid}
 %%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
